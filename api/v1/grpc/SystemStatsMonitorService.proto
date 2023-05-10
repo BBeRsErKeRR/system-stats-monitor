@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+package v1grpc;
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = "./;v1grpc";
+
+
+message StartMonitoringRequest {
+  int64 response_duration = 1;
+  int64 wait_duration = 2;
+}
+
+message StatsResponse {
+  CPUTimeStatValue cpu_info = 1;
+}
+
+message CPUTimeStatValue {
+  double user = 1;
+  double system = 2;
+  double idle = 3;
+}
+
+service SystemStatsMonitorServiceV1 {
+  rpc StartMonitoring(StartMonitoringRequest) returns (stream StatsResponse);
+}
