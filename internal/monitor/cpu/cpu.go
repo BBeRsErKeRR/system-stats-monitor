@@ -2,9 +2,8 @@ package cpu
 
 import (
 	"context"
-	"strconv"
-	"strings"
-	"sync"
+
+	"github.com/BBeRsErKeRR/system-stats-monitor/internal/storage"
 )
 
 type CPUTimeStat struct {
@@ -13,45 +12,46 @@ type CPUTimeStat struct {
 	Idle   float64 `json:"idle"`
 }
 
-type AverageStat struct {
-	sync.Mutex
-	lastCPUTimes []CPUTimeStat
+func NewCPUTimeStat(user, system, idle float64) CPUTimeStat {
+	return CPUTimeStat{
+		User:   user,
+		System: system,
+		Idle:   idle,
+	}
 }
 
-func (as *AverageStat) Add(ctx context.Context) error {
-	times, err := GetCpuTimes(ctx)
+type CPUStatCollector struct {
+	name string
+	st   storage.Storage
+}
+
+func New(st storage.Storage) *CPUStatCollector {
+	return &CPUStatCollector{
+		name: "cpu",
+		st:   st,
+	}
+}
+
+func (c *CPUStatCollector) Grab(ctx context.Context) error {
+	times, err := GetCPUTimes(ctx)
 	if err != nil {
 		return err
 	}
-	as.Lock()
-	defer as.Unlock()
-	as.lastCPUTimes = append(as.lastCPUTimes, *times)
-	return nil
+	return c.st.StoreStats(ctx, c.name, *times)
 }
 
-func (as *AverageStat) Avg() (*CPUTimeStat, error) {
+func (as *CPUStatCollector) GetStats(ctx context.Context, period int64) (interface{}, error) {
 	var sumUser, sumSystem, sumIdle float64
-	as.Lock()
-	defer as.Unlock()
-	for _, stat := range as.lastCPUTimes {
+	lastCPUTimes, err := as.st.GetStats(ctx, as.name, period)
+	if err != nil {
+		return nil, err
+	}
+	for _, metric := range lastCPUTimes {
+		stat := metric.StatInfo.(CPUTimeStat)
 		sumUser += stat.User
 		sumSystem += stat.System
 		sumIdle += stat.Idle
 	}
-	totalLen := len(as.lastCPUTimes)
-	return &CPUTimeStat{
-		User:   sumUser / float64(totalLen),
-		System: sumSystem / float64(totalLen),
-		Idle:   sumIdle / float64(totalLen),
-	}, nil
-}
-
-func (c CPUTimeStat) JsonString() string {
-	v := []string{
-		`"user":` + strconv.FormatFloat(c.User, 'f', 1, 64),
-		`"system":` + strconv.FormatFloat(c.System, 'f', 1, 64),
-		`"idle":` + strconv.FormatFloat(c.Idle, 'f', 1, 64),
-	}
-
-	return `{` + strings.Join(v, ",") + `}`
+	totalLen := len(lastCPUTimes)
+	return NewCPUTimeStat(sumUser/float64(totalLen), sumSystem/float64(totalLen), sumIdle/float64(totalLen)), nil
 }

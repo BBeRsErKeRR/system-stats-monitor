@@ -6,7 +6,8 @@
 SHELL=/bin/bash
 SHELLOPTS:=$(if $(SHELLOPTS),$(SHELLOPTS):)pipefail:errexit
 
-BIN := "./bin/ssm"
+BIN_DAEMON := "./bin/ssm"
+BIN_CLIENT := "./bin/ssm_client"
 
 help: ## Display this help
 	@IFS=$$'\n'; for line in `grep -h -E '^[a-zA-Z_#-]+:?.*?## .*$$' $(MAKEFILE_LIST)`; do if [ "$${line:0:2}" = "##" ]; then \
@@ -17,11 +18,22 @@ help: ## Display this help
 generate: ## Generate proto files
 	go $@ ./...
 
-build:
-	go build -v -o $(BIN) -ldflags "$(LDFLAGS)" ./cmd/scheduler
+build-daemon:
+	go build -v -o $(BIN_DAEMON) -ldflags "$(LDFLAGS)" ./cmd/daemon
+
+build-client:
+	go build -v -o $(BIN_CLIENT) -ldflags "$(LDFLAGS)" ./cmd/client
+
+build: build-daemon build-client
 
 version: build  ## Project version
 	$(BIN) version
+
+run-daemon: build-daemon ## Run monitor app
+	$(BIN_DAEMON) --config ./configs/config.toml
+
+run-client: build-client ## Run client app
+	$(BIN_CLIENT) --config ./configs/config_client.toml
 
 test: ## Execute tests
 	go test -race ./internal/... ./api/...
@@ -34,7 +46,7 @@ install-lint-deps:
 	(which golangci-lint > /dev/null) || curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(shell go env GOPATH)/bin v1.51.1
 
 lint: install-lint-deps ## Run liniter
-	golangci-lint run --config=$$(pwd)/../.golangci.yml \
+	golangci-lint run --config=$$(pwd)/.golangci.yml \
 		--timeout 3m0s \
 		--skip-dirs='/opt/hostedtoolcache/go|/go/pkg/mod' \
 		./...

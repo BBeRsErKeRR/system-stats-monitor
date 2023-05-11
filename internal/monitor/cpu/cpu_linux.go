@@ -9,14 +9,13 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/tklauser/go-sysconf"
-
 	files "github.com/BBeRsErKeRR/system-stats-monitor/pkg/files"
+	"github.com/tklauser/go-sysconf"
 )
 
 var (
 	ErrorGetStat = errors.New("stat does not contain cpu info")
-	ErrorGetCpu  = errors.New("not contain cpu")
+	ErrorGetCPU  = errors.New("not contain cpu")
 	ClocksPerSec = float64(100)
 )
 
@@ -36,7 +35,7 @@ func parseStatLine(line string) (*CPUTimeStat, error) {
 	}
 
 	if !strings.HasPrefix(fields[0], "cpu") {
-		return nil, ErrorGetCpu
+		return nil, ErrorGetCPU
 	}
 
 	user, err := strconv.ParseFloat(fields[1], 64)
@@ -54,15 +53,15 @@ func parseStatLine(line string) (*CPUTimeStat, error) {
 		return nil, err
 	}
 
-	ct := &CPUTimeStat{
-		User:   user / ClocksPerSec,
-		System: system / ClocksPerSec,
-		Idle:   idle / ClocksPerSec,
-	}
-	return ct, nil
+	ct := NewCPUTimeStat(
+		user/ClocksPerSec,
+		system/ClocksPerSec,
+		idle/ClocksPerSec,
+	)
+	return &ct, nil
 }
 
-func GetCpuTimes(ctx context.Context) (*CPUTimeStat, error) {
+func GetCPUTimes(ctx context.Context) (*CPUTimeStat, error) {
 	lines, err := files.ReadLinesOffsetN("/proc/stat", 0, 1)
 	if err != nil {
 		return nil, err

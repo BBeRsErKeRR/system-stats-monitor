@@ -3,13 +3,12 @@ package files
 import (
 	"bufio"
 	"io"
-	"io/ioutil"
 	"os"
 	"strings"
 )
 
 func ReadFile(filename string) (string, error) {
-	content, err := ioutil.ReadFile(filename)
+	content, err := os.ReadFile(filename)
 	if err != nil {
 		return "", err
 	}
