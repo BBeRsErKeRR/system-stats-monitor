@@ -27,8 +27,15 @@ func getStatsResponse(stats stats.Stats) *StatsResponse {
 		Idle:   stats.CPUInfo.Idle,
 	}
 
+	loadInfo := &LoadStatValue{
+		Load1:  stats.LoadInfo.Load1,
+		Load5:  stats.LoadInfo.Load5,
+		Load15: stats.LoadInfo.Load15,
+	}
+
 	return &StatsResponse{
-		CpuInfo: cpuInfo,
+		CpuInfo:  cpuInfo,
+		LoadInfo: loadInfo,
 	}
 }
 

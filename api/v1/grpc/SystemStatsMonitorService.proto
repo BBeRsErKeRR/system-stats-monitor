@@ -14,12 +14,19 @@ message StartMonitoringRequest {
 
 message StatsResponse {
   CPUTimeStatValue cpu_info = 1;
+  LoadStatValue load_info = 2;
 }
 
 message CPUTimeStatValue {
   double user = 1;
   double system = 2;
   double idle = 3;
+}
+
+message LoadStatValue {
+  double load1 = 1;
+  double load5 = 2;
+  double load15 = 3;
 }
 
 service SystemStatsMonitorServiceV1 {

@@ -85,5 +85,9 @@ func (c *Client) printStats(data *v1grpc.StatsResponse) {
 	fmt.Println("  user mode time:", data.GetCpuInfo().GetUser())
 	fmt.Println("  system mode time:", data.GetCpuInfo().GetSystem())
 	fmt.Println("  idle time:", data.GetCpuInfo().GetIdle())
+	fmt.Println("\nLA:")
+	fmt.Println("  1 minute:", data.GetLoadInfo().GetLoad1())
+	fmt.Println("  5 minutes:", data.GetLoadInfo().GetLoad5())
+	fmt.Println("  15 minutes:", data.GetLoadInfo().GetLoad15())
 	fmt.Println()
 }

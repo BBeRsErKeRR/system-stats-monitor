@@ -29,7 +29,7 @@ func (st *Storage) GetStats(ctx context.Context, name string, period int64) ([]s
 	defer st.RUnlock()
 	res := make([]storage.Metric, 0, len(st.metrics))
 	for _, e := range st.metrics {
-		if e.Date.After(start) && e.Date.Before(end) {
+		if e.Name == name && e.Date.After(start) && e.Date.Before(end) {
 			res = append(res, e)
 		}
 	}

@@ -9,6 +9,7 @@ import (
 	"github.com/BBeRsErKeRR/system-stats-monitor/internal/logger"
 	"github.com/BBeRsErKeRR/system-stats-monitor/internal/monitor"
 	"github.com/BBeRsErKeRR/system-stats-monitor/internal/monitor/cpu"
+	"github.com/BBeRsErKeRR/system-stats-monitor/internal/monitor/load"
 	"github.com/BBeRsErKeRR/system-stats-monitor/internal/storage"
 	"go.uber.org/zap"
 )
@@ -19,10 +20,12 @@ type Config struct {
 	ScanDuration  time.Duration `mapstructure:"scan_duration"`
 	CleanDuration time.Duration `mapstructure:"clean_duration"`
 	IsCPUEnable   bool          `mapstructure:"cpu_enable"`
+	IsLoadEnable  bool          `mapstructure:"load_enable"`
 }
 
 type Stats struct {
-	CPUInfo cpu.CPUTimeStat `json:"cpu_info"` //nolint:tagliatelle
+	CPUInfo  cpu.CPUTimeStat `json:"cpu_info"`  //nolint:tagliatelle
+	LoadInfo load.LoadStat   `json:"load_info"` //nolint:tagliatelle
 }
 
 type StatsUseCase struct {
@@ -36,6 +39,9 @@ func New(cfg *Config, st storage.Storage, logger logger.Logger) StatsUseCase {
 	collectors := make([]monitor.Collector, 0, 1)
 	if cfg.IsCPUEnable {
 		collectors = append(collectors, cpu.New(st))
+	}
+	if cfg.IsLoadEnable {
+		collectors = append(collectors, load.New(st))
 	}
 	return StatsUseCase{
 		collectors:    collectors,
@@ -75,6 +81,8 @@ func (s *StatsUseCase) GetStats(ctx context.Context, duration int64) (Stats, err
 		switch v := statsItem.(type) {
 		case cpu.CPUTimeStat:
 			stats.CPUInfo = v
+		case load.LoadStat:
+			stats.LoadInfo = v
 		default:
 			return stats, ErrCollector
 		}
