@@ -99,6 +99,18 @@ func (c *Client) printStats(data *v1grpc.StatsResponse) {
 	for _, item := range data.GetNetworkStatisticsInfo().Items {
 		fmt.Printf("    %s: %v %v %v %v\n", item.Command, item.Pid, item.User, item.Protocol, item.Port)
 	}
+	fmt.Println("\nDisk:")
+	fmt.Println("  Usage:")
+	for _, item := range data.GetDiskUsageInfo().Items {
+		fmt.Printf("    %s -> %s : used(%vM %v%%) inode(%vM %v%%)\n",
+			item.Path,
+			item.Fstype,
+			item.Used,
+			convertFloat(item.AvailablePercent),
+			item.InodeUsed,
+			convertFloat(item.InodesAvailablePercent),
+		)
+	}
 	fmt.Println()
 }
 

@@ -1,8 +1,9 @@
-package network
+package networkstatistics
 
 import (
 	"context"
 	"fmt"
+	"sort"
 
 	"github.com/BBeRsErKeRR/system-stats-monitor/internal/storage"
 )
@@ -36,11 +37,9 @@ func (c *NSCollector) Grab(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	for _, stat := range stats {
-		err = c.st.StoreStats(ctx, c.name, stat)
-		if err != nil {
-			return err
-		}
+	err = c.st.BulkStoreStats(ctx, c.name, stats)
+	if err != nil {
+		return err
 	}
 	return nil
 }
@@ -58,6 +57,11 @@ func (as *NSCollector) GetStats(ctx context.Context, period int64) (interface{},
 func unique(intSlice []storage.Metric) []NetworkStatsItem {
 	keys := make(map[string]bool)
 	list := make([]NetworkStatsItem, 0, len(intSlice))
+
+	sort.Slice(intSlice, func(i, j int) bool {
+		return intSlice[i].Date.Before(intSlice[j].Date)
+	})
+
 	for _, fact := range intSlice {
 		stat := fact.StatInfo.(NetworkStatsItem)
 		entry := fmt.Sprintf("%v/%v/%v/%v", stat.Command, stat.Protocol, stat.PID, stat.Port)

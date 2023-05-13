@@ -18,7 +18,18 @@ func (st *Storage) StoreStats(ctx context.Context, name string, data interface{}
 	st.Lock()
 	defer st.Unlock()
 	id := uuid.New().String()
-	st.metrics[id] = storage.CreateMetric(name, data)
+	st.metrics[id] = storage.CreateMetric(name, data, time.Now())
+	return nil
+}
+
+func (st *Storage) BulkStoreStats(ctx context.Context, name string, data []interface{}) error {
+	st.Lock()
+	defer st.Unlock()
+	date := time.Now()
+	for _, item := range data {
+		id := uuid.New().String()
+		st.metrics[id] = storage.CreateMetric(name, item, date)
+	}
 	return nil
 }
 

@@ -11,13 +11,13 @@ import (
 	command "github.com/BBeRsErKeRR/system-stats-monitor/pkg/command"
 )
 
-func parseNetstatOut(output string) ([]NetworkStatsItem, error) {
+func parseNetstatOut(output string) ([]interface{}, error) {
 	lines := strings.Split(output, "\n")
 	startLine := 1
 	if strings.Contains(lines[0], "Not all processes could") {
 		startLine = 4
 	}
-	result := make([]NetworkStatsItem, 0, len(output)-startLine)
+	result := make([]interface{}, 0, len(output)-startLine)
 	for _, line := range lines[startLine:] {
 		values := strings.Fields(line)
 		if len(values) < 1 {
@@ -50,7 +50,7 @@ func parseNetstatOut(output string) ([]NetworkStatsItem, error) {
 	return result, nil
 }
 
-func GetNS(ctx context.Context) ([]NetworkStatsItem, error) {
+func GetNS(ctx context.Context) ([]interface{}, error) {
 	out, err := command.CommandWithContext(ctx, "netstat", "-lntupe")
 	if err != nil {
 		return nil, err

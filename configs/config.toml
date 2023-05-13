@@ -11,5 +11,6 @@ port = "9080"
 cpu_enable = true
 load_enable = true
 network_enable = true
+disk_enable = true
 scan_duration = "5s"
 clean_duration = "20m"

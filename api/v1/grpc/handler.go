@@ -48,15 +48,28 @@ func getStatsResponse(stats stats.Stats) *StatsResponse {
 		})
 	}
 
-	networkInfo := &NetworkStatisticsValue{
-		Items: statisticsItems,
+	duItems := make([]*DiskUsageItem, 0, len(stats.DiskUsageInfo.Items))
+	for _, statItem := range stats.DiskUsageInfo.Items {
+		duItems = append(duItems, &DiskUsageItem{
+			Path:                   statItem.Path,
+			Fstype:                 statItem.Fstype,
+			Used:                   statItem.Used,
+			AvailablePercent:       statItem.AvailablePercent,
+			InodeUsed:              statItem.InodesUsed,
+			InodesAvailablePercent: statItem.InodesAvailablePercent,
+		})
 	}
 
 	return &StatsResponse{
-		CpuInfo:               cpuInfo,
-		LoadInfo:              loadInfo,
-		NetworkStateInfo:      nsInfo,
-		NetworkStatisticsInfo: networkInfo,
+		CpuInfo:          cpuInfo,
+		LoadInfo:         loadInfo,
+		NetworkStateInfo: nsInfo,
+		NetworkStatisticsInfo: &NetworkStatisticsValue{
+			Items: statisticsItems,
+		},
+		DiskUsageInfo: &DiskUsageValue{
+			Items: duItems,
+		},
 	}
 }
 

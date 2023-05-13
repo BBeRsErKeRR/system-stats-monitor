@@ -11,16 +11,17 @@ type Metric struct {
 	StatInfo interface{}
 }
 
-func CreateMetric(name string, data interface{}) Metric {
+func CreateMetric(name string, data interface{}, date time.Time) Metric {
 	return Metric{
 		Name:     name,
-		Date:     time.Now(),
+		Date:     date,
 		StatInfo: data,
 	}
 }
 
 type Storage interface {
 	StoreStats(context.Context, string, interface{}) error
+	BulkStoreStats(context.Context, string, []interface{}) error
 	GetStats(context.Context, string, int64) ([]Metric, error)
 	Clear(context.Context, time.Time) error
 	Connect(context.Context) error
