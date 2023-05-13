@@ -10,6 +10,8 @@ import (
 	"github.com/BBeRsErKeRR/system-stats-monitor/internal/monitor"
 	"github.com/BBeRsErKeRR/system-stats-monitor/internal/monitor/cpu"
 	"github.com/BBeRsErKeRR/system-stats-monitor/internal/monitor/load"
+	networkstates "github.com/BBeRsErKeRR/system-stats-monitor/internal/monitor/network_states"
+	network "github.com/BBeRsErKeRR/system-stats-monitor/internal/monitor/network_statistics"
 	"github.com/BBeRsErKeRR/system-stats-monitor/internal/storage"
 	"go.uber.org/zap"
 )
@@ -17,15 +19,18 @@ import (
 var ErrCollector = errors.New("unsupported collector type")
 
 type Config struct {
-	ScanDuration  time.Duration `mapstructure:"scan_duration"`
-	CleanDuration time.Duration `mapstructure:"clean_duration"`
-	IsCPUEnable   bool          `mapstructure:"cpu_enable"`
-	IsLoadEnable  bool          `mapstructure:"load_enable"`
+	ScanDuration    time.Duration `mapstructure:"scan_duration"`
+	CleanDuration   time.Duration `mapstructure:"clean_duration"`
+	IsCPUEnable     bool          `mapstructure:"cpu_enable"`
+	IsLoadEnable    bool          `mapstructure:"load_enable"`
+	IsNetworkEnable bool          `mapstructure:"network_enable"`
 }
 
 type Stats struct {
-	CPUInfo  cpu.CPUTimeStat `json:"cpu_info"`  //nolint:tagliatelle
-	LoadInfo load.LoadStat   `json:"load_info"` //nolint:tagliatelle
+	CPUInfo               cpu.CPUTimeStat                 `json:"cpu_info"`                //nolint:tagliatelle
+	LoadInfo              load.LoadStat                   `json:"load_info"`               //nolint:tagliatelle
+	NetworkStateInfo      networkstates.NetworkStatesStat `json:"network_state_info"`      //nolint:tagliatelle
+	NetworkStatisticsInfo network.NetworkStats            `json:"network_statistics_info"` //nolint:tagliatelle
 }
 
 type StatsUseCase struct {
@@ -42,6 +47,10 @@ func New(cfg *Config, st storage.Storage, logger logger.Logger) StatsUseCase {
 	}
 	if cfg.IsLoadEnable {
 		collectors = append(collectors, load.New(st))
+	}
+	if cfg.IsNetworkEnable {
+		collectors = append(collectors, networkstates.New(st))
+		collectors = append(collectors, network.New(st))
 	}
 	return StatsUseCase{
 		collectors:    collectors,
@@ -83,6 +92,10 @@ func (s *StatsUseCase) GetStats(ctx context.Context, duration int64) (Stats, err
 			stats.CPUInfo = v
 		case load.LoadStat:
 			stats.LoadInfo = v
+		case networkstates.NetworkStatesStat:
+			stats.NetworkStateInfo = v
+		case network.NetworkStats:
+			stats.NetworkStatisticsInfo = v
 		default:
 			return stats, ErrCollector
 		}

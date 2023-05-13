@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"strconv"
 	"time"
 
 	v1grpc "github.com/BBeRsErKeRR/system-stats-monitor/api/v1/grpc"
@@ -82,12 +83,25 @@ func (c *Client) Close() error {
 
 func (c *Client) printStats(data *v1grpc.StatsResponse) {
 	fmt.Println("\nCPU:")
-	fmt.Println("  user mode time:", data.GetCpuInfo().GetUser())
-	fmt.Println("  system mode time:", data.GetCpuInfo().GetSystem())
-	fmt.Println("  idle time:", data.GetCpuInfo().GetIdle())
+	fmt.Println("  user mode time:", convertFloat(data.GetCpuInfo().GetUser()))
+	fmt.Println("  system mode time:", convertFloat(data.GetCpuInfo().GetSystem()))
+	fmt.Println("  idle time:", convertFloat(data.GetCpuInfo().GetIdle()))
 	fmt.Println("\nLA:")
-	fmt.Println("  1 minute:", data.GetLoadInfo().GetLoad1())
-	fmt.Println("  5 minutes:", data.GetLoadInfo().GetLoad5())
-	fmt.Println("  15 minutes:", data.GetLoadInfo().GetLoad15())
+	fmt.Println("  1 minute:", convertFloat(data.GetLoadInfo().GetLoad1()))
+	fmt.Println("  5 minutes:", convertFloat(data.GetLoadInfo().GetLoad5()))
+	fmt.Println("  15 minutes:", convertFloat(data.GetLoadInfo().GetLoad15()))
+	fmt.Println("\nNetwork:")
+	fmt.Println("  States:")
+	for key, value := range data.GetNetworkStateInfo().Counters {
+		fmt.Printf("    %s: %v\n", key, value)
+	}
+	fmt.Println("  Listen items:")
+	for _, item := range data.GetNetworkStatisticsInfo().Items {
+		fmt.Printf("    %s: %v %v %v %v\n", item.Command, item.Pid, item.User, item.Protocol, item.Port)
+	}
 	fmt.Println()
+}
+
+func convertFloat(item float64) string {
+	return strconv.FormatFloat(item, 'f', 2, 64)
 }

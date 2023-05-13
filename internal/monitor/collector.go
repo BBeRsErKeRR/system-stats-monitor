@@ -1,6 +1,11 @@
 package monitor
 
-import "context"
+import (
+	"context"
+	"errors"
+)
+
+var ErrNotImplemented = errors.New("collector not implemented")
 
 type Collector interface {
 	Grab(context.Context) error

@@ -1,0 +1,70 @@
+package network
+
+import (
+	"context"
+	"fmt"
+
+	"github.com/BBeRsErKeRR/system-stats-monitor/internal/storage"
+)
+
+type NetworkStatsItem struct {
+	Command  string
+	PID      int32
+	User     int32
+	Protocol string
+	Port     int32
+}
+
+type NetworkStats struct {
+	Items []NetworkStatsItem
+}
+
+type NSCollector struct {
+	name string
+	st   storage.Storage
+}
+
+func New(st storage.Storage) *NSCollector {
+	return &NSCollector{
+		name: "network_statistics",
+		st:   st,
+	}
+}
+
+func (c *NSCollector) Grab(ctx context.Context) error {
+	stats, err := GetNS(ctx)
+	if err != nil {
+		return err
+	}
+	for _, stat := range stats {
+		err = c.st.StoreStats(ctx, c.name, stat)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (as *NSCollector) GetStats(ctx context.Context, period int64) (interface{}, error) {
+	nsStats, err := as.st.GetStats(ctx, as.name, period)
+	if err != nil {
+		return nil, err
+	}
+	return NetworkStats{
+		Items: unique(nsStats),
+	}, nil
+}
+
+func unique(intSlice []storage.Metric) []NetworkStatsItem {
+	keys := make(map[string]bool)
+	list := make([]NetworkStatsItem, 0, len(intSlice))
+	for _, fact := range intSlice {
+		stat := fact.StatInfo.(NetworkStatsItem)
+		entry := fmt.Sprintf("%v/%v/%v/%v", stat.Command, stat.Protocol, stat.PID, stat.Port)
+		if _, value := keys[entry]; !value {
+			keys[entry] = true
+			list = append(list, stat)
+		}
+	}
+	return list
+}

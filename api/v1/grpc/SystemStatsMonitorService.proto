@@ -2,8 +2,6 @@ syntax = "proto3";
 
 package v1grpc;
 
-import "google/protobuf/timestamp.proto";
-
 option go_package = "./;v1grpc";
 
 
@@ -15,6 +13,8 @@ message StartMonitoringRequest {
 message StatsResponse {
   CPUTimeStatValue cpu_info = 1;
   LoadStatValue load_info = 2;
+  NetworkStateStatValue network_state_info = 3;
+  NetworkStatisticsValue network_statistics_info = 4;
 }
 
 message CPUTimeStatValue {
@@ -27,6 +27,21 @@ message LoadStatValue {
   double load1 = 1;
   double load5 = 2;
   double load15 = 3;
+}
+
+message NetworkStateStatValue {
+  map<string, int32> counters =1;
+}
+
+message NetworkStatItem {
+  string command = 1;
+  int32 pid = 2;
+  int32 user = 3;
+  string protocol = 4;
+  int32 port = 5;
+}
+message NetworkStatisticsValue {
+  repeated NetworkStatItem items = 1;
 }
 
 service SystemStatsMonitorServiceV1 {

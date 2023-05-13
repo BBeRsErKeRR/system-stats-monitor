@@ -25,11 +25,11 @@ func New(st storage.Storage) *LoadStatCollector {
 }
 
 func (c *LoadStatCollector) Grab(ctx context.Context) error {
-	times, err := GetLoad(ctx)
+	la, err := GetLoad(ctx)
 	if err != nil {
 		return err
 	}
-	return c.st.StoreStats(ctx, c.name, *times)
+	return c.st.StoreStats(ctx, c.name, *la)
 }
 
 func (as *LoadStatCollector) GetStats(ctx context.Context, period int64) (interface{}, error) {

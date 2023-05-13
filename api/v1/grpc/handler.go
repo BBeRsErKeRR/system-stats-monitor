@@ -33,9 +33,30 @@ func getStatsResponse(stats stats.Stats) *StatsResponse {
 		Load15: stats.LoadInfo.Load15,
 	}
 
+	nsInfo := &NetworkStateStatValue{
+		Counters: stats.NetworkStateInfo.Counters,
+	}
+
+	statisticsItems := make([]*NetworkStatItem, 0, len(stats.NetworkStatisticsInfo.Items))
+	for _, statItem := range stats.NetworkStatisticsInfo.Items {
+		statisticsItems = append(statisticsItems, &NetworkStatItem{
+			Command:  statItem.Command,
+			Pid:      statItem.PID,
+			User:     statItem.User,
+			Protocol: statItem.Protocol,
+			Port:     statItem.Port,
+		})
+	}
+
+	networkInfo := &NetworkStatisticsValue{
+		Items: statisticsItems,
+	}
+
 	return &StatsResponse{
-		CpuInfo:  cpuInfo,
-		LoadInfo: loadInfo,
+		CpuInfo:               cpuInfo,
+		LoadInfo:              loadInfo,
+		NetworkStateInfo:      nsInfo,
+		NetworkStatisticsInfo: networkInfo,
 	}
 }
 
