@@ -10,8 +10,8 @@ import (
 	"github.com/BBeRsErKeRR/system-stats-monitor/internal/monitor"
 	"github.com/BBeRsErKeRR/system-stats-monitor/internal/monitor/cpu"
 	"github.com/BBeRsErKeRR/system-stats-monitor/internal/monitor/load"
-	networkstates "github.com/BBeRsErKeRR/system-stats-monitor/internal/monitor/network_states"
-	network "github.com/BBeRsErKeRR/system-stats-monitor/internal/monitor/network_statistics"
+	networkstates "github.com/BBeRsErKeRR/system-stats-monitor/internal/monitor/network/states"
+	networkstatistics "github.com/BBeRsErKeRR/system-stats-monitor/internal/monitor/network/statistics"
 	"github.com/BBeRsErKeRR/system-stats-monitor/internal/storage"
 	"go.uber.org/zap"
 )
@@ -30,7 +30,7 @@ type Stats struct {
 	CPUInfo               cpu.CPUTimeStat                 `json:"cpu_info"`                //nolint:tagliatelle
 	LoadInfo              load.LoadStat                   `json:"load_info"`               //nolint:tagliatelle
 	NetworkStateInfo      networkstates.NetworkStatesStat `json:"network_state_info"`      //nolint:tagliatelle
-	NetworkStatisticsInfo network.NetworkStats            `json:"network_statistics_info"` //nolint:tagliatelle
+	NetworkStatisticsInfo networkstatistics.NetworkStats  `json:"network_statistics_info"` //nolint:tagliatelle
 }
 
 type StatsUseCase struct {
@@ -50,7 +50,7 @@ func New(cfg *Config, st storage.Storage, logger logger.Logger) StatsUseCase {
 	}
 	if cfg.IsNetworkEnable {
 		collectors = append(collectors, networkstates.New(st))
-		collectors = append(collectors, network.New(st))
+		collectors = append(collectors, networkstatistics.New(st))
 	}
 	return StatsUseCase{
 		collectors:    collectors,
@@ -94,7 +94,7 @@ func (s *StatsUseCase) GetStats(ctx context.Context, duration int64) (Stats, err
 			stats.LoadInfo = v
 		case networkstates.NetworkStatesStat:
 			stats.NetworkStateInfo = v
-		case network.NetworkStats:
+		case networkstatistics.NetworkStats:
 			stats.NetworkStatisticsInfo = v
 		default:
 			return stats, ErrCollector

@@ -1,7 +1,7 @@
 //go:build linux
 // +build linux
 
-package network
+package networkstatistics
 
 import (
 	"context"

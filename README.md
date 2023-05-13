@@ -21,25 +21,25 @@
 **N** и **M** указывает клиент в запросе на получение статистики.
 
 Что необходимо собирать:
-- Средняя загрузка системы (load average).
+- [x] Средняя загрузка системы (load average).
 
-- Средняя загрузка CPU (%user_mode, %system_mode, %idle).
+- [x] Средняя загрузка CPU (%user_mode, %system_mode, %idle).
 
-- Загрузка дисков:
-    - tps (transfers per second);
-    - KB/s (kilobytes (read+write) per second);
+- [ ] Загрузка дисков:
+    - [ ] tps (transfers per second);
+    - [ ] KB/s (kilobytes (read+write) per second);
 
-- Информация о дисках по каждой файловой системе:
-    - использовано мегабайт, % от доступного количества;
-    - использовано inode, % от доступного количества.
+- [ ] Информация о дисках по каждой файловой системе:
+    - [ ] использовано мегабайт, % от доступного количества;
+    - [ ] использовано inode, % от доступного количества.
 
-- Top talkers по сети:
-    - по протоколам: protocol (TCP, UDP, ICMP, etc), bytes, % от sum(bytes) за последние **M**), сортируем по убыванию процента;
-    - по трафику: source ip:port, destination ip:port, protocol, bytes per second (bps), сортируем по убыванию bps.
+- [ ] Top talkers по сети:
+    - [ ] по протоколам: protocol (TCP, UDP, ICMP, etc), bytes, % от sum(bytes) за последние **M**), сортируем по убыванию процента;
+    - [ ] по трафику: source ip:port, destination ip:port, protocol, bytes per second (bps), сортируем по убыванию bps.
 
-- Статистика по сетевым соединениям:
-    - слушающие TCP & UDP сокеты: command, pid, user, protocol, port;
-    - количество TCP соединений, находящихся в разных состояниях (ESTAB, FIN_WAIT, SYN_RCV и пр.).
+- [x] Статистика по сетевым соединениям:
+    - [x] слушающие TCP & UDP сокеты: command, pid, user, protocol, port;
+    - [x] количество TCP соединений, находящихся в разных состояниях (ESTAB, FIN_WAIT, SYN_RCV и пр.).
 
 #### Разрешено использовать только стандартную библиотеку языка Go!
 
