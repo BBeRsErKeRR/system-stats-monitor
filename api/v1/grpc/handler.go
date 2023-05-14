@@ -60,6 +60,16 @@ func getStatsResponse(stats stats.Stats) *StatsResponse {
 		})
 	}
 
+	dIoItems := make([]*DiskIoItem, 0, len(stats.DiskIoInfo.Items))
+	for _, statItem := range stats.DiskIoInfo.Items {
+		dIoItems = append(dIoItems, &DiskIoItem{
+			Device:   statItem.Device,
+			Tps:      statItem.Tps,
+			KbReadS:  statItem.KbReadS,
+			KbWriteS: statItem.KbWriteS,
+		})
+	}
+
 	return &StatsResponse{
 		CpuInfo:          cpuInfo,
 		LoadInfo:         loadInfo,
@@ -69,6 +79,9 @@ func getStatsResponse(stats stats.Stats) *StatsResponse {
 		},
 		DiskUsageInfo: &DiskUsageValue{
 			Items: duItems,
+		},
+		DiskIoInfo: &DiskIoValue{
+			Items: dIoItems,
 		},
 	}
 }

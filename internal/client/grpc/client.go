@@ -111,6 +111,15 @@ func (c *Client) printStats(data *v1grpc.StatsResponse) {
 			convertFloat(item.InodesAvailablePercent),
 		)
 	}
+	fmt.Println("  IO:")
+	for _, item := range data.GetDiskIoInfo().Items {
+		fmt.Printf("    %s -> tps(%v) kB_read/s(%v) kB_wrtn/s(%v)\n",
+			item.Device,
+			convertFloat(item.Tps),
+			convertFloat(item.KbReadS),
+			convertFloat(item.KbWriteS),
+		)
+	}
 	fmt.Println()
 }
 

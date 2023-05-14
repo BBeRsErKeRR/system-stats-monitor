@@ -16,6 +16,7 @@ message StatsResponse {
   NetworkStateStatValue network_state_info = 3;
   NetworkStatisticsValue network_statistics_info = 4;
   DiskUsageValue disk_usage_info = 5;
+  DiskIoValue disk_io_info = 6;
 }
 
 message CPUTimeStatValue {
@@ -57,6 +58,17 @@ message DiskUsageItem {
 
 message DiskUsageValue {
   repeated DiskUsageItem items = 1;
+}
+
+message DiskIoItem {
+  string device = 1;
+  double tps = 2;
+  double kb_read_s = 3;
+  double kb_write_s = 4;
+}
+
+message DiskIoValue {
+  repeated DiskIoItem items = 1;
 }
 
 

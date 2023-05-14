@@ -25,7 +25,7 @@ func New(st storage.Storage) *LoadStatCollector {
 }
 
 func (c *LoadStatCollector) Grab(ctx context.Context) error {
-	la, err := GetLoad(ctx)
+	la, err := getLoad(ctx)
 	if err != nil {
 		return err
 	}

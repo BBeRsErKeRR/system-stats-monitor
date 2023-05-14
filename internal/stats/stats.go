@@ -9,6 +9,7 @@ import (
 	"github.com/BBeRsErKeRR/system-stats-monitor/internal/logger"
 	"github.com/BBeRsErKeRR/system-stats-monitor/internal/monitor"
 	"github.com/BBeRsErKeRR/system-stats-monitor/internal/monitor/cpu"
+	diskio "github.com/BBeRsErKeRR/system-stats-monitor/internal/monitor/disk/io"
 	diskusage "github.com/BBeRsErKeRR/system-stats-monitor/internal/monitor/disk/usage"
 	"github.com/BBeRsErKeRR/system-stats-monitor/internal/monitor/load"
 	networkstates "github.com/BBeRsErKeRR/system-stats-monitor/internal/monitor/network/states"
@@ -34,6 +35,7 @@ type Stats struct {
 	NetworkStateInfo      networkstates.NetworkStatesStat `json:"network_state_info"`      //nolint:tagliatelle
 	NetworkStatisticsInfo networkstatistics.NetworkStats  `json:"network_statistics_info"` //nolint:tagliatelle
 	DiskUsageInfo         diskusage.UsageStats            `json:"disk_usage_info"`         //nolint:tagliatelle
+	DiskIoInfo            diskio.DiskIoStat               `json:"disk_io_info"`            //nolint:tagliatelle
 }
 
 type StatsUseCase struct {
@@ -57,6 +59,7 @@ func New(cfg *Config, st storage.Storage, logger logger.Logger) StatsUseCase {
 	}
 	if cfg.IsDiskEnable {
 		collectors = append(collectors, diskusage.New(st))
+		collectors = append(collectors, diskio.New(st))
 	}
 	return StatsUseCase{
 		collectors:    collectors,
@@ -104,6 +107,8 @@ func (s *StatsUseCase) GetStats(ctx context.Context, duration int64) (Stats, err
 			stats.NetworkStatisticsInfo = v
 		case diskusage.UsageStats:
 			stats.DiskUsageInfo = v
+		case diskio.DiskIoStat:
+			stats.DiskIoInfo = v
 		default:
 			return stats, ErrCollector
 		}

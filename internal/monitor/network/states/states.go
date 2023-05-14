@@ -23,7 +23,7 @@ func New(st storage.Storage) *NSCollector {
 }
 
 func (c *NSCollector) Grab(ctx context.Context) error {
-	stat, err := GetNS(ctx)
+	stat, err := getNS(ctx)
 	if err != nil {
 		return err
 	}

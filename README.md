@@ -25,9 +25,9 @@
 
 - [x] Средняя загрузка CPU (%user_mode, %system_mode, %idle).
 
-- [ ] Загрузка дисков:
-    - [ ] tps (transfers per second);
-    - [ ] KB/s (kilobytes (read+write) per second);
+- [x] Загрузка дисков:
+    - [x] tps (transfers per second);
+    - [x] KB/s (kilobytes (read+write) per second);
 
 - [x] Информация о дисках по каждой файловой системе:
     - [x] использовано мегабайт, % от доступного количества;

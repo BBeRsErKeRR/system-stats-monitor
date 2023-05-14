@@ -50,7 +50,7 @@ func parseNetstatOut(output string) ([]interface{}, error) {
 	return result, nil
 }
 
-func GetNS(ctx context.Context) ([]interface{}, error) {
+func getNS(ctx context.Context) ([]interface{}, error) {
 	out, err := command.CommandWithContext(ctx, "netstat", "-lntupe")
 	if err != nil {
 		return nil, err

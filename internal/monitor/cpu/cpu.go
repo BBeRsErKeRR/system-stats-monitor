@@ -33,7 +33,7 @@ func New(st storage.Storage) *CPUStatCollector {
 }
 
 func (c *CPUStatCollector) Grab(ctx context.Context) error {
-	times, err := GetCPUTimes(ctx)
+	times, err := getCPUTimes(ctx)
 	if err != nil {
 		return err
 	}

@@ -64,7 +64,7 @@ func parseDfOut(outK, outI string) ([]interface{}, error) {
 	return result, nil
 }
 
-func GetDU(ctx context.Context) ([]interface{}, error) {
+func getDU(ctx context.Context) ([]interface{}, error) {
 	outK, err := command.CommandWithContext(ctx, "df", "-k")
 	if err != nil {
 		return nil, err

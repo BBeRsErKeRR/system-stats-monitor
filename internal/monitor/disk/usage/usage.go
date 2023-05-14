@@ -34,7 +34,7 @@ func New(st storage.Storage) *UsageCollector {
 }
 
 func (c *UsageCollector) Grab(ctx context.Context) error {
-	stats, err := GetDU(ctx)
+	stats, err := getDU(ctx)
 	if err != nil {
 		return err
 	}

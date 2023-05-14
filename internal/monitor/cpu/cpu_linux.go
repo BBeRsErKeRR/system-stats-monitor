@@ -61,7 +61,7 @@ func parseStatLine(line string) (*CPUTimeStat, error) {
 	return &ct, nil
 }
 
-func GetCPUTimes(ctx context.Context) (*CPUTimeStat, error) {
+func getCPUTimes(ctx context.Context) (*CPUTimeStat, error) {
 	lines, err := files.ReadLinesOffsetN("/proc/stat", 0, 1)
 	if err != nil {
 		return nil, err

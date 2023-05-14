@@ -35,7 +35,7 @@ func parseSSOut(output string) (*NetworkStatesStat, error) {
 	return ret, nil
 }
 
-func GetNS(ctx context.Context) (*NetworkStatesStat, error) {
+func getNS(ctx context.Context) (*NetworkStatesStat, error) {
 	out, err := command.CommandWithContext(ctx, "ss", "-ta")
 	if err != nil {
 		return nil, err

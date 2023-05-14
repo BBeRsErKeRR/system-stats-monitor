@@ -35,7 +35,7 @@ func parseStatLine(line string) (*LoadStat, error) {
 	return ret, nil
 }
 
-func GetLoad(ctx context.Context) (*LoadStat, error) {
+func getLoad(ctx context.Context) (*LoadStat, error) {
 	lines, err := files.ReadFile("/proc/loadavg")
 	if err != nil {
 		return nil, err

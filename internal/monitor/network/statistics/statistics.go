@@ -33,15 +33,11 @@ func New(st storage.Storage) *NSCollector {
 }
 
 func (c *NSCollector) Grab(ctx context.Context) error {
-	stats, err := GetNS(ctx)
+	stats, err := getNS(ctx)
 	if err != nil {
 		return err
 	}
-	err = c.st.BulkStoreStats(ctx, c.name, stats)
-	if err != nil {
-		return err
-	}
-	return nil
+	return c.st.BulkStoreStats(ctx, c.name, stats)
 }
 
 func (as *NSCollector) GetStats(ctx context.Context, period int64) (interface{}, error) {
