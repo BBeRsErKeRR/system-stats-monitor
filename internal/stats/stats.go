@@ -15,18 +15,17 @@ import (
 	networkstates "github.com/BBeRsErKeRR/system-stats-monitor/internal/monitor/network/states"
 	networkstatistics "github.com/BBeRsErKeRR/system-stats-monitor/internal/monitor/network/statistics"
 	"github.com/BBeRsErKeRR/system-stats-monitor/internal/storage"
+	memorystorage "github.com/BBeRsErKeRR/system-stats-monitor/internal/storage/memory"
 	"go.uber.org/zap"
 )
 
 var ErrCollector = errors.New("unsupported collector type")
 
 type Config struct {
-	ScanDuration    time.Duration `mapstructure:"scan_duration"`
-	CleanDuration   time.Duration `mapstructure:"clean_duration"`
-	IsCPUEnable     bool          `mapstructure:"cpu_enable"`
-	IsLoadEnable    bool          `mapstructure:"load_enable"`
-	IsNetworkEnable bool          `mapstructure:"network_enable"`
-	IsDiskEnable    bool          `mapstructure:"disk_enable"`
+	IsCPUEnable     bool `mapstructure:"cpu_enable"`
+	IsLoadEnable    bool `mapstructure:"load_enable"`
+	IsNetworkEnable bool `mapstructure:"network_enable"`
+	IsDiskEnable    bool `mapstructure:"disk_enable"`
 }
 
 type Stats struct {
@@ -40,39 +39,72 @@ type Stats struct {
 
 type UseCase struct {
 	logger             logger.Logger
-	st                 storage.Storage
-	cleanDuration      time.Duration
+	st                 map[string]storage.Storage
 	collectors         []monitor.Collector
 	constantCollectors []monitor.ConstantCollector
-	storages           map[string]storage.Storage
 }
 
-func New(cfg *Config, st storage.Storage, logger logger.Logger) UseCase {
+func createStorage() storage.Storage {
+	return memorystorage.New()
+}
+
+func New(cfg *Config, logger logger.Logger) UseCase {
 	collectors := make([]monitor.Collector, 0, 1)
+	st := make(map[string]storage.Storage)
 	if cfg.IsCPUEnable {
-		collectors = append(collectors, cpu.New(st, logger))
+		st["cpu"] = createStorage()
+		collectors = append(collectors, cpu.New(st["cpu"], logger))
 	}
 	if cfg.IsLoadEnable {
-		collectors = append(collectors, load.New(st, logger))
+		st["load"] = createStorage()
+		collectors = append(collectors, load.New(st["load"], logger))
 	}
 	if cfg.IsNetworkEnable {
-		collectors = append(collectors, networkstates.New(st, logger))
-		collectors = append(collectors, networkstatistics.New(st, logger))
+		st["networkstates"] = createStorage()
+		st["networkstatistics"] = createStorage()
+		collectors = append(collectors, networkstates.New(st["networkstates"], logger))
+		collectors = append(collectors, networkstatistics.New(st["networkstatistics"], logger))
 	}
 	if cfg.IsDiskEnable {
-		collectors = append(collectors, diskusage.New(st, logger))
-		collectors = append(collectors, diskio.New(st, logger))
+		st["diskusage"] = createStorage()
+		st["diskio"] = createStorage()
+		collectors = append(collectors, diskusage.New(st["diskusage"], logger))
+		collectors = append(collectors, diskio.New(st["diskio"], logger))
 	}
 	return UseCase{
-		collectors:    collectors,
-		st:            st,
-		cleanDuration: cfg.CleanDuration,
-		logger:        logger,
+		collectors: collectors,
+		st:         st,
+		logger:     logger,
 	}
 }
 
-func (s *UseCase) Clean(ctx context.Context) error {
-	return s.st.Clear(ctx, time.Now().Add(-s.cleanDuration))
+func (s *UseCase) Clean(ctx context.Context, date time.Time) error {
+	for _, st := range s.st {
+		err := st.Clear(ctx, date)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (s *UseCase) Connect(ctx context.Context) error {
+	for _, st := range s.st {
+		err := st.Connect(ctx)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+func (s *UseCase) Close(ctx context.Context) error {
+	for _, st := range s.st {
+		err := st.Close(ctx)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (s *UseCase) collectPeriodic(ctx context.Context, duration time.Duration) {

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/BBeRsErKeRR/system-stats-monitor/internal/app"
 	"github.com/BBeRsErKeRR/system-stats-monitor/internal/config"
 	"github.com/BBeRsErKeRR/system-stats-monitor/internal/logger"
 	internalgrpc "github.com/BBeRsErKeRR/system-stats-monitor/internal/server/grpc"
@@ -8,11 +9,8 @@ import (
 )
 
 type Config struct {
-	Logger *logger.Config `mapstructure:"logger"`
-	App    *AppConf       `mapstructure:"app"`
-}
-
-type AppConf struct {
+	Logger      *logger.Config       `mapstructure:"logger"`
+	App         *app.Config          `mapstructure:"app"`
 	GRPCServer  *internalgrpc.Config `mapstructure:"grpc_server"`
 	StatsConfig *stats.Config        `mapstructure:"stats"`
 }

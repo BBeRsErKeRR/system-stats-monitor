@@ -7,5 +7,6 @@ import (
 )
 
 type Application interface {
-	StartMonitoring(context.Context, int64, int64) (<-chan stats.Stats, error)
+	StartMonitoring(context.Context, int64, int64, stats.UseCase) (<-chan stats.Stats, error)
+	CreateUseCase() stats.UseCase
 }

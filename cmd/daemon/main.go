@@ -5,13 +5,11 @@ import (
 	"log"
 	"os/signal"
 	"syscall"
-	"time"
 
 	"github.com/BBeRsErKeRR/system-stats-monitor/internal/app"
 	versioncmd "github.com/BBeRsErKeRR/system-stats-monitor/internal/cmd"
 	"github.com/BBeRsErKeRR/system-stats-monitor/internal/logger"
 	internalgrpc "github.com/BBeRsErKeRR/system-stats-monitor/internal/server/grpc"
-	"github.com/BBeRsErKeRR/system-stats-monitor/internal/stats"
 	"github.com/spf13/cobra"
 )
 
@@ -35,15 +33,8 @@ var rootCmd = &cobra.Command{
 			return
 		}
 
-		st := app.GetStorage()
-		err = st.Connect(ctx)
-		if err != nil {
-			logg.Error("Error create db connection: " + err.Error())
-			return
-		}
-		stats := stats.New(config.App.StatsConfig, st, logg)
-		monitor := app.New(logg, stats)
-		grpc := internalgrpc.NewServer(logg, monitor, config.App.GRPCServer)
+		monitor := app.New(logg, config.App, config.StatsConfig)
+		grpc := internalgrpc.NewServer(logg, monitor, config.GRPCServer)
 
 		go func() {
 			if err := grpc.Start(ctx); err != nil {
@@ -52,30 +43,7 @@ var rootCmd = &cobra.Command{
 			}
 		}()
 
-		go func() {
-			cleanTicker := time.NewTicker(config.App.StatsConfig.CleanDuration)
-			for {
-				select {
-				case <-cleanTicker.C:
-					err := stats.Clean(ctx)
-					if err != nil {
-						logg.Error("failed to clear storage: " + err.Error())
-						cancel()
-					}
-				case <-ctx.Done():
-					return
-				}
-			}
-		}()
-
-		go func() {
-			if err := monitor.CollectData(ctx, config.App.StatsConfig.ScanDuration); err != nil {
-				logg.Error("failed to collect metrics: " + err.Error())
-				cancel()
-			}
-		}()
-
-		defer st.Close(ctx)
+		// defer st.Close(ctx)
 		defer grpc.Stop()
 
 		<-ctx.Done()

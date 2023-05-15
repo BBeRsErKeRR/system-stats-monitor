@@ -51,7 +51,7 @@ func (st *Storage) Clear(ctx context.Context, date time.Time) error {
 	st.Lock()
 	defer st.Unlock()
 	for id, m := range st.metrics {
-		if m.Date.After(date) {
+		if m.Date.Before(date) {
 			delete(st.metrics, id)
 		}
 	}

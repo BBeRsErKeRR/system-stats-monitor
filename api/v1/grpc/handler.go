@@ -87,7 +87,8 @@ func getStatsResponse(stats stats.Stats) *StatsResponse {
 }
 
 func (h *Handler) StartMonitoring(req *StartMonitoringRequest, srv SystemStatsMonitorServiceV1_StartMonitoringServer) error { //nolint:lll
-	result, err := h.app.StartMonitoring(srv.Context(), req.GetResponseDuration(), req.GetWaitDuration())
+	useCase := h.app.CreateUseCase()
+	result, err := h.app.StartMonitoring(srv.Context(), req.GetResponseDuration(), req.GetWaitDuration(), useCase)
 	if err != nil {
 		return err
 	}

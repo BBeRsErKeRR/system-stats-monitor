@@ -3,14 +3,15 @@ level = "DEBUG"
 out_paths = ["stdout"]
 err_paths = ["stderr"]
 
-[app.grpc_server]
+[app]
+scan_duration = "5s"
+
+[grpc_server]
 host = "0.0.0.0"
 port = "9080"
 
-[app.stats]
+[stats]
 cpu_enable = true
 load_enable = true
 network_enable = true
 disk_enable = true
-scan_duration = "5s"
-clean_duration = "20m"
