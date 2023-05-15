@@ -24,24 +24,24 @@ func parseSSOut(output string) ([]interface{}, error) {
 			return nil, err
 		}
 
-		kb_read_s, err := strconv.ParseFloat(fields[2], 64)
+		kbReadS, err := strconv.ParseFloat(fields[2], 64)
 		if err != nil {
 			return nil, err
 		}
 
-		kb_write_s, err := strconv.ParseFloat(fields[3], 64)
+		kbWriteS, err := strconv.ParseFloat(fields[3], 64)
 		if err != nil {
 			return nil, err
 		}
 
-		result = append(result, NewDiskIoStatItem(fields[0], tps, kb_read_s, kb_write_s))
+		result = append(result, NewDiskIoStatItem(fields[0], tps, kbReadS, kbWriteS))
 	}
 
 	return result, nil
 }
 
 func collectDiskIo(ctx context.Context) ([]interface{}, error) {
-	out, err := command.CommandWithContext(ctx, "iostat", "-d", "-k")
+	out, err := command.WithContext(ctx, "iostat", "-d", "-k")
 	if err != nil {
 		return nil, err
 	}

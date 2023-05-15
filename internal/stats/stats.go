@@ -30,38 +30,40 @@ type Config struct {
 }
 
 type Stats struct {
-	CPUInfo               cpu.CPUTimeStat                 `json:"cpu_info"`                //nolint:tagliatelle
-	LoadInfo              load.LoadStat                   `json:"load_info"`               //nolint:tagliatelle
-	NetworkStateInfo      networkstates.NetworkStatesStat `json:"network_state_info"`      //nolint:tagliatelle
-	NetworkStatisticsInfo networkstatistics.NetworkStats  `json:"network_statistics_info"` //nolint:tagliatelle
-	DiskUsageInfo         diskusage.UsageStats            `json:"disk_usage_info"`         //nolint:tagliatelle
-	DiskIoInfo            diskio.DiskIoStat               `json:"disk_io_info"`            //nolint:tagliatelle
+	CPUInfo               storage.CPUTimeStat       `json:"cpu_info"`                //nolint:tagliatelle
+	LoadInfo              storage.LoadStat          `json:"load_info"`               //nolint:tagliatelle
+	NetworkStateInfo      storage.NetworkStatesStat `json:"network_state_info"`      //nolint:tagliatelle
+	NetworkStatisticsInfo storage.NetworkStats      `json:"network_statistics_info"` //nolint:tagliatelle
+	DiskUsageInfo         storage.UsageStats        `json:"disk_usage_info"`         //nolint:tagliatelle
+	DiskIoInfo            storage.DiskIoStat        `json:"disk_io_info"`            //nolint:tagliatelle
 }
 
-type StatsUseCase struct {
-	logger        logger.Logger
-	st            storage.Storage
-	cleanDuration time.Duration
-	collectors    []monitor.Collector
+type UseCase struct {
+	logger             logger.Logger
+	st                 storage.Storage
+	cleanDuration      time.Duration
+	collectors         []monitor.Collector
+	constantCollectors []monitor.ConstantCollector
+	storages           map[string]storage.Storage
 }
 
-func New(cfg *Config, st storage.Storage, logger logger.Logger) StatsUseCase {
+func New(cfg *Config, st storage.Storage, logger logger.Logger) UseCase {
 	collectors := make([]monitor.Collector, 0, 1)
 	if cfg.IsCPUEnable {
-		collectors = append(collectors, cpu.New(st))
+		collectors = append(collectors, cpu.New(st, logger))
 	}
 	if cfg.IsLoadEnable {
-		collectors = append(collectors, load.New(st))
+		collectors = append(collectors, load.New(st, logger))
 	}
 	if cfg.IsNetworkEnable {
-		collectors = append(collectors, networkstates.New(st))
-		collectors = append(collectors, networkstatistics.New(st))
+		collectors = append(collectors, networkstates.New(st, logger))
+		collectors = append(collectors, networkstatistics.New(st, logger))
 	}
 	if cfg.IsDiskEnable {
-		collectors = append(collectors, diskusage.New(st))
-		collectors = append(collectors, diskio.New(st))
+		collectors = append(collectors, diskusage.New(st, logger))
+		collectors = append(collectors, diskio.New(st, logger))
 	}
-	return StatsUseCase{
+	return UseCase{
 		collectors:    collectors,
 		st:            st,
 		cleanDuration: cfg.CleanDuration,
@@ -69,27 +71,63 @@ func New(cfg *Config, st storage.Storage, logger logger.Logger) StatsUseCase {
 	}
 }
 
-func (s *StatsUseCase) Clean(ctx context.Context) error {
+func (s *UseCase) Clean(ctx context.Context) error {
 	return s.st.Clear(ctx, time.Now().Add(-s.cleanDuration))
 }
 
-func (s *StatsUseCase) Collect(ctx context.Context) error {
+func (s *UseCase) collectPeriodic(ctx context.Context, duration time.Duration) {
+	collectTicker := time.NewTicker(duration)
+	for {
+		select {
+		case <-collectTicker.C:
+			s.logger.Info("start collect periodic data")
+			wg := sync.WaitGroup{}
+			wg.Add(len(s.collectors))
+			for _, c := range s.collectors {
+				go func(collector monitor.Collector) {
+					defer wg.Done()
+					err := collector.Grab(ctx)
+					if err != nil {
+						s.logger.Error("failed to grab info", zap.Error(err))
+					}
+				}(c)
+			}
+			wg.Wait()
+			s.logger.Info("successful collect periodic data")
+		case <-ctx.Done():
+			s.logger.Info("data collection interrupted")
+			return
+		}
+	}
+}
+
+func (s *UseCase) collectConstant(ctx context.Context) {
+	s.logger.Info("start collect constant data")
 	wg := sync.WaitGroup{}
-	wg.Add(len(s.collectors))
-	for _, c := range s.collectors {
-		go func(collector monitor.Collector) {
+	wg.Add(len(s.constantCollectors))
+	for _, c := range s.constantCollectors {
+		go func(collector monitor.ConstantCollector) {
 			defer wg.Done()
-			err := collector.Grab(ctx)
+			err := collector.GrabSub(ctx)
 			if err != nil {
-				s.logger.Error("failed to clear storage", zap.Error(err))
+				s.logger.Error("failed to grab info", zap.Error(err))
 			}
 		}(c)
 	}
 	wg.Wait()
+}
+
+func (s *UseCase) Collect(ctx context.Context, duration time.Duration) error {
+	go func() {
+		s.collectPeriodic(ctx, duration)
+	}()
+	go func() {
+		s.collectConstant(ctx)
+	}()
 	return nil
 }
 
-func (s *StatsUseCase) GetStats(ctx context.Context, duration int64) (Stats, error) {
+func (s *UseCase) GetStats(ctx context.Context, duration int64) (Stats, error) {
 	stats := Stats{}
 	for _, collector := range s.collectors {
 		statsItem, err := collector.GetStats(ctx, duration)
@@ -97,17 +135,17 @@ func (s *StatsUseCase) GetStats(ctx context.Context, duration int64) (Stats, err
 			return stats, err
 		}
 		switch v := statsItem.(type) {
-		case cpu.CPUTimeStat:
+		case storage.CPUTimeStat:
 			stats.CPUInfo = v
-		case load.LoadStat:
+		case storage.LoadStat:
 			stats.LoadInfo = v
-		case networkstates.NetworkStatesStat:
+		case storage.NetworkStatesStat:
 			stats.NetworkStateInfo = v
-		case networkstatistics.NetworkStats:
+		case storage.NetworkStats:
 			stats.NetworkStatisticsInfo = v
-		case diskusage.UsageStats:
+		case storage.UsageStats:
 			stats.DiskUsageInfo = v
-		case diskio.DiskIoStat:
+		case storage.DiskIoStat:
 			stats.DiskIoInfo = v
 		default:
 			return stats, ErrCollector

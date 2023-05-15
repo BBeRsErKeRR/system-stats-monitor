@@ -5,61 +5,58 @@ import (
 	"fmt"
 	"sort"
 
+	"github.com/BBeRsErKeRR/system-stats-monitor/internal/logger"
 	"github.com/BBeRsErKeRR/system-stats-monitor/internal/storage"
 )
 
-type NetworkStatsItem struct {
-	Command  string
-	PID      int32
-	User     int32
-	Protocol string
-	Port     int32
-}
-
-type NetworkStats struct {
-	Items []NetworkStatsItem
-}
-
 type NSCollector struct {
-	name string
-	st   storage.Storage
+	name   string
+	st     storage.Storage
+	logger logger.Logger
 }
 
-func New(st storage.Storage) *NSCollector {
+func New(st storage.Storage, logger logger.Logger) *NSCollector {
 	return &NSCollector{
-		name: "network_statistics",
-		st:   st,
+		name:   "network_statistics",
+		st:     st,
+		logger: logger,
 	}
 }
 
 func (c *NSCollector) Grab(ctx context.Context) error {
+	c.logger.Info("start collect data")
 	stats, err := getNS(ctx)
 	if err != nil {
 		return err
 	}
-	return c.st.BulkStoreStats(ctx, c.name, stats)
+	err = c.st.BulkStoreStats(ctx, c.name, stats)
+	if err != nil {
+		return err
+	}
+	c.logger.Info("successful collect data")
+	return nil
 }
 
-func (as *NSCollector) GetStats(ctx context.Context, period int64) (interface{}, error) {
-	nsStats, err := as.st.GetStats(ctx, as.name, period)
+func (c *NSCollector) GetStats(ctx context.Context, period int64) (interface{}, error) {
+	nsStats, err := c.st.GetStats(ctx, c.name, period)
 	if err != nil {
 		return nil, err
 	}
-	return NetworkStats{
+	return storage.NetworkStats{
 		Items: unique(nsStats),
 	}, nil
 }
 
-func unique(intSlice []storage.Metric) []NetworkStatsItem {
+func unique(intSlice []storage.Metric) []storage.NetworkStatsItem {
 	keys := make(map[string]bool)
-	list := make([]NetworkStatsItem, 0, len(intSlice))
+	list := make([]storage.NetworkStatsItem, 0, len(intSlice))
 
 	sort.Slice(intSlice, func(i, j int) bool {
 		return intSlice[i].Date.Before(intSlice[j].Date)
 	})
 
 	for _, fact := range intSlice {
-		stat := fact.StatInfo.(NetworkStatsItem)
+		stat := fact.StatInfo.(storage.NetworkStatsItem)
 		entry := fmt.Sprintf("%v/%v/%v/%v", stat.Command, stat.Protocol, stat.PID, stat.Port)
 		if _, value := keys[entry]; !value {
 			keys[entry] = true

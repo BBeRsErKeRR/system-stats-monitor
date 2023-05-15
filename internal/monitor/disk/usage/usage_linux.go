@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/BBeRsErKeRR/system-stats-monitor/internal/storage"
 	"github.com/BBeRsErKeRR/system-stats-monitor/pkg/command"
 )
 
@@ -15,7 +16,7 @@ func parseDfOut(outK, outI string) ([]interface{}, error) {
 	lines := strings.Split(outK, "\n")
 	linesI := strings.Split(outI, "\n")
 	result := make([]interface{}, 0, len(outK)-1)
-	buff := make(map[string]UsageStatItem)
+	buff := make(map[string]storage.UsageStatItem)
 
 	for _, line := range lines[1:] {
 		values := strings.Fields(line)
@@ -32,10 +33,10 @@ func parseDfOut(outK, outI string) ([]interface{}, error) {
 			return nil, err
 		}
 
-		item := UsageStatItem{
+		item := storage.UsageStatItem{
 			Path:             values[5],
 			Fstype:           values[0],
-			Used:             int64(used) / 1024,
+			Used:             used / 1024,
 			AvailablePercent: (float64(available) / float64(available+used)) * 100.0,
 		}
 		buff[values[5]] = item
@@ -57,7 +58,7 @@ func parseDfOut(outK, outI string) ([]interface{}, error) {
 		}
 
 		item := buff[values[5]]
-		item.InodesUsed = int64(used) / 1024
+		item.InodesUsed = used / 1024
 		item.InodesAvailablePercent = (float64(available) / float64(available+used)) * 100.0
 		result = append(result, item)
 	}
@@ -65,11 +66,11 @@ func parseDfOut(outK, outI string) ([]interface{}, error) {
 }
 
 func getDU(ctx context.Context) ([]interface{}, error) {
-	outK, err := command.CommandWithContext(ctx, "df", "-k")
+	outK, err := command.WithContext(ctx, "df", "-k")
 	if err != nil {
 		return nil, err
 	}
-	outI, err := command.CommandWithContext(ctx, "df", "-i")
+	outI, err := command.WithContext(ctx, "df", "-i")
 	if err != nil {
 		return nil, err
 	}

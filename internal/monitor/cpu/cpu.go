@@ -3,51 +3,54 @@ package cpu
 import (
 	"context"
 
+	"github.com/BBeRsErKeRR/system-stats-monitor/internal/logger"
 	"github.com/BBeRsErKeRR/system-stats-monitor/internal/storage"
 )
 
-type CPUTimeStat struct {
-	User   float64 `json:"user"`
-	System float64 `json:"system"`
-	Idle   float64 `json:"idle"`
-}
-
-func NewCPUTimeStat(user, system, idle float64) CPUTimeStat {
-	return CPUTimeStat{
+func NewCPUTimeStat(user, system, idle float64) storage.CPUTimeStat {
+	return storage.CPUTimeStat{
 		User:   user,
 		System: system,
 		Idle:   idle,
 	}
 }
 
-type CPUStatCollector struct {
-	name string
-	st   storage.Storage
+type StatCollector struct {
+	name   string
+	st     storage.Storage
+	logger logger.Logger
 }
 
-func New(st storage.Storage) *CPUStatCollector {
-	return &CPUStatCollector{
-		name: "cpu",
-		st:   st,
+func New(st storage.Storage, logger logger.Logger) *StatCollector {
+	return &StatCollector{
+		name:   "cpu",
+		st:     st,
+		logger: logger,
 	}
 }
 
-func (c *CPUStatCollector) Grab(ctx context.Context) error {
-	times, err := getCPUTimes(ctx)
+func (c *StatCollector) Grab(ctx context.Context) error {
+	c.logger.Info("start collect data")
+	times, err := getCPUTimes()
 	if err != nil {
 		return err
 	}
-	return c.st.StoreStats(ctx, c.name, *times)
+	err = c.st.StoreStats(ctx, c.name, *times)
+	if err != nil {
+		return err
+	}
+	c.logger.Info("successful collect data")
+	return nil
 }
 
-func (as *CPUStatCollector) GetStats(ctx context.Context, period int64) (interface{}, error) {
+func (c *StatCollector) GetStats(ctx context.Context, period int64) (interface{}, error) {
 	var sumUser, sumSystem, sumIdle float64
-	lastCPUTimes, err := as.st.GetStats(ctx, as.name, period)
+	lastCPUTimes, err := c.st.GetStats(ctx, c.name, period)
 	if err != nil {
 		return nil, err
 	}
 	for _, metric := range lastCPUTimes {
-		stat := metric.StatInfo.(CPUTimeStat)
+		stat := metric.StatInfo.(storage.CPUTimeStat)
 		sumUser += stat.User
 		sumSystem += stat.System
 		sumIdle += stat.Idle

@@ -14,10 +14,10 @@ import (
 
 type App struct {
 	logger logger.Logger
-	u      stats.StatsUseCase
+	u      stats.UseCase
 }
 
-func New(logger logger.Logger, u stats.StatsUseCase) *App {
+func New(logger logger.Logger, u stats.UseCase) *App {
 	return &App{
 		logger: logger,
 		u:      u,
@@ -26,21 +26,11 @@ func New(logger logger.Logger, u stats.StatsUseCase) *App {
 
 func (a *App) CollectData(ctx context.Context, duration time.Duration) error {
 	a.logger.Info(fmt.Sprintf("collect data from period: %s", duration))
-	collectTicker := time.NewTicker(duration)
-	for {
-		select {
-		case <-collectTicker.C:
-			a.logger.Info("start collect data")
-			err := a.u.Collect(ctx)
-			if err != nil {
-				return err
-			}
-			a.logger.Info("successful collect data")
-		case <-ctx.Done():
-			a.logger.Info("data collection interrupted")
-			return nil
-		}
+	err := a.u.Collect(ctx, duration)
+	if err != nil {
+		return err
 	}
+	return nil
 }
 
 func (a *App) StartMonitoring(ctx context.Context, respDuration, statsDuration int64) (<-chan stats.Stats, error) {

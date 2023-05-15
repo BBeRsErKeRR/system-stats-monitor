@@ -4,11 +4,11 @@
 package cpu
 
 import (
-	"context"
 	"errors"
 	"strconv"
 	"strings"
 
+	"github.com/BBeRsErKeRR/system-stats-monitor/internal/storage"
 	files "github.com/BBeRsErKeRR/system-stats-monitor/pkg/files"
 	"github.com/tklauser/go-sysconf"
 )
@@ -27,7 +27,7 @@ func init() {
 	}
 }
 
-func parseStatLine(line string) (*CPUTimeStat, error) {
+func parseStatLine(line string) (*storage.CPUTimeStat, error) {
 	fields := strings.Fields(line)
 
 	if len(fields) == 0 {
@@ -61,7 +61,7 @@ func parseStatLine(line string) (*CPUTimeStat, error) {
 	return &ct, nil
 }
 
-func getCPUTimes(ctx context.Context) (*CPUTimeStat, error) {
+func getCPUTimes() (*storage.CPUTimeStat, error) {
 	lines, err := files.ReadLinesOffsetN("/proc/stat", 0, 1)
 	if err != nil {
 		return nil, err

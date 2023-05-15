@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/BBeRsErKeRR/system-stats-monitor/internal/storage"
 	command "github.com/BBeRsErKeRR/system-stats-monitor/pkg/command"
 )
 
@@ -38,7 +39,7 @@ func parseNetstatOut(output string) ([]interface{}, error) {
 		if err != nil {
 			return nil, err
 		}
-		item := NetworkStatsItem{
+		item := storage.NetworkStatsItem{
 			Command:  strings.Join(pidWithCommand[1:], "/"),
 			PID:      int32(pid),
 			User:     int32(user),
@@ -51,7 +52,7 @@ func parseNetstatOut(output string) ([]interface{}, error) {
 }
 
 func getNS(ctx context.Context) ([]interface{}, error) {
-	out, err := command.CommandWithContext(ctx, "netstat", "-lntupe")
+	out, err := command.WithContext(ctx, "netstat", "-lntupe")
 	if err != nil {
 		return nil, err
 	}

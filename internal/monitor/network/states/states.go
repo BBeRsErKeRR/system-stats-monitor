@@ -3,41 +3,46 @@ package networkstates
 import (
 	"context"
 
+	"github.com/BBeRsErKeRR/system-stats-monitor/internal/logger"
 	"github.com/BBeRsErKeRR/system-stats-monitor/internal/storage"
 )
 
-type NetworkStatesStat struct {
-	Counters map[string]int32
+type StatCollector struct {
+	name   string
+	st     storage.Storage
+	logger logger.Logger
 }
 
-type NSCollector struct {
-	name string
-	st   storage.Storage
-}
-
-func New(st storage.Storage) *NSCollector {
-	return &NSCollector{
-		name: "network_sates",
-		st:   st,
+func New(st storage.Storage, logger logger.Logger) *StatCollector {
+	return &StatCollector{
+		name:   "network_sates",
+		st:     st,
+		logger: logger,
 	}
 }
 
-func (c *NSCollector) Grab(ctx context.Context) error {
+func (c *StatCollector) Grab(ctx context.Context) error {
+	c.logger.Info("start collect data")
 	stat, err := getNS(ctx)
 	if err != nil {
 		return err
 	}
-	return c.st.StoreStats(ctx, c.name, *stat)
+	err = c.st.StoreStats(ctx, c.name, *stat)
+	if err != nil {
+		return err
+	}
+	c.logger.Info("successful collect data")
+	return nil
 }
 
-func (as *NSCollector) GetStats(ctx context.Context, period int64) (interface{}, error) {
+func (c *StatCollector) GetStats(ctx context.Context, period int64) (interface{}, error) {
 	avgNs := make(map[string]int32)
-	nsStats, err := as.st.GetStats(ctx, as.name, period)
+	nsStats, err := c.st.GetStats(ctx, c.name, period)
 	if err != nil {
 		return nil, err
 	}
 	for _, fact := range nsStats {
-		stat := fact.StatInfo.(NetworkStatesStat)
+		stat := fact.StatInfo.(storage.NetworkStatesStat)
 		for name, counter := range stat.Counters {
 			_, ok := avgNs[name]
 			if ok {
@@ -51,7 +56,7 @@ func (as *NSCollector) GetStats(ctx context.Context, period int64) (interface{},
 	for name, counter := range avgNs {
 		avgNs[name] = counter / lengthStat
 	}
-	return NetworkStatesStat{
+	return storage.NetworkStatesStat{
 		Counters: avgNs,
 	}, nil
 }

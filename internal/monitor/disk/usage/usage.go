@@ -5,35 +5,26 @@ import (
 	"fmt"
 	"sort"
 
+	"github.com/BBeRsErKeRR/system-stats-monitor/internal/logger"
 	"github.com/BBeRsErKeRR/system-stats-monitor/internal/storage"
 )
 
-type UsageStatItem struct {
-	Path                   string  `json:"path"`
-	Fstype                 string  `json:"fstype"`
-	Used                   int64   `json:"used"`
-	AvailablePercent       float64 `json:"available_percent"`
-	InodesUsed             int64   `json:"inodes_used"`
-	InodesAvailablePercent float64 `json:"inodes_available_percent"`
-}
-
-type UsageStats struct {
-	Items []UsageStatItem
-}
-
 type UsageCollector struct {
-	name string
-	st   storage.Storage
+	name   string
+	st     storage.Storage
+	logger logger.Logger
 }
 
-func New(st storage.Storage) *UsageCollector {
+func New(st storage.Storage, logger logger.Logger) *UsageCollector {
 	return &UsageCollector{
-		name: "du",
-		st:   st,
+		name:   "du",
+		st:     st,
+		logger: logger,
 	}
 }
 
 func (c *UsageCollector) Grab(ctx context.Context) error {
+	c.logger.Info("start collect data")
 	stats, err := getDU(ctx)
 	if err != nil {
 		return err
@@ -44,28 +35,29 @@ func (c *UsageCollector) Grab(ctx context.Context) error {
 			return err
 		}
 	}
+	c.logger.Info("successful collect data")
 	return nil
 }
 
-func (as *UsageCollector) GetStats(ctx context.Context, period int64) (interface{}, error) {
-	stats, err := as.st.GetStats(ctx, as.name, period)
+func (c *UsageCollector) GetStats(ctx context.Context, period int64) (interface{}, error) {
+	stats, err := c.st.GetStats(ctx, c.name, period)
 	if err != nil {
 		return nil, err
 	}
-	return UsageStats{
+	return storage.UsageStats{
 		Items: unique(stats),
 	}, nil
 }
 
-func unique(intSlice []storage.Metric) []UsageStatItem {
+func unique(intSlice []storage.Metric) []storage.UsageStatItem {
 	keys := make(map[string]bool)
-	list := make([]UsageStatItem, 0, len(intSlice))
+	list := make([]storage.UsageStatItem, 0, len(intSlice))
 	sort.Slice(intSlice, func(i, j int) bool {
 		return intSlice[i].Date.Before(intSlice[j].Date)
 	})
 
 	for _, fact := range intSlice {
-		stat := fact.StatInfo.(UsageStatItem)
+		stat := fact.StatInfo.(storage.UsageStatItem)
 		entry := fmt.Sprintf("%v/%v", stat.Path, stat.Fstype)
 		if _, value := keys[entry]; !value {
 			keys[entry] = true

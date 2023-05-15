@@ -3,49 +3,52 @@ package load
 import (
 	"context"
 
+	"github.com/BBeRsErKeRR/system-stats-monitor/internal/logger"
 	"github.com/BBeRsErKeRR/system-stats-monitor/internal/storage"
 )
 
-type LoadStat struct {
-	Load1  float64 `json:"load1"`
-	Load5  float64 `json:"load5"`
-	Load15 float64 `json:"load15"`
+type StatCollector struct {
+	name   string
+	st     storage.Storage
+	logger logger.Logger
 }
 
-type LoadStatCollector struct {
-	name string
-	st   storage.Storage
-}
-
-func New(st storage.Storage) *LoadStatCollector {
-	return &LoadStatCollector{
-		name: "load",
-		st:   st,
+func New(st storage.Storage, logger logger.Logger) *StatCollector {
+	return &StatCollector{
+		name:   "load",
+		st:     st,
+		logger: logger,
 	}
 }
 
-func (c *LoadStatCollector) Grab(ctx context.Context) error {
-	la, err := getLoad(ctx)
+func (c *StatCollector) Grab(ctx context.Context) error {
+	c.logger.Info("start collect data")
+	la, err := getLoad()
 	if err != nil {
 		return err
 	}
-	return c.st.StoreStats(ctx, c.name, *la)
+	err = c.st.StoreStats(ctx, c.name, *la)
+	if err != nil {
+		return err
+	}
+	c.logger.Info("successful collect data")
+	return nil
 }
 
-func (as *LoadStatCollector) GetStats(ctx context.Context, period int64) (interface{}, error) {
+func (c *StatCollector) GetStats(ctx context.Context, period int64) (interface{}, error) {
 	var sumLoad1, sumLoad5, sumLoad15 float64
-	lastLoadStats, err := as.st.GetStats(ctx, as.name, period)
+	lastLoadStats, err := c.st.GetStats(ctx, c.name, period)
 	if err != nil {
 		return nil, err
 	}
 	for _, metric := range lastLoadStats {
-		stat := metric.StatInfo.(LoadStat)
+		stat := metric.StatInfo.(storage.LoadStat)
 		sumLoad1 += stat.Load1
 		sumLoad5 += stat.Load5
 		sumLoad15 += stat.Load15
 	}
 	totalLen := len(lastLoadStats)
-	return LoadStat{
+	return storage.LoadStat{
 		Load1:  sumLoad1 / float64(totalLen),
 		Load5:  sumLoad5 / float64(totalLen),
 		Load15: sumLoad15 / float64(totalLen),

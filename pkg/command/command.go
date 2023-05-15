@@ -6,7 +6,7 @@ import (
 	"os/exec"
 )
 
-func CommandWithContext(ctx context.Context, name string, arg ...string) ([]byte, error) {
+func WithContext(ctx context.Context, name string, arg ...string) ([]byte, error) {
 	cmd := exec.CommandContext(ctx, name, arg...)
 
 	var buf bytes.Buffer

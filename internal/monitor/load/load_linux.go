@@ -4,14 +4,14 @@
 package load
 
 import (
-	"context"
 	"strconv"
 	"strings"
 
+	"github.com/BBeRsErKeRR/system-stats-monitor/internal/storage"
 	files "github.com/BBeRsErKeRR/system-stats-monitor/pkg/files"
 )
 
-func parseStatLine(line string) (*LoadStat, error) {
+func parseStatLine(line string) (*storage.LoadStat, error) {
 	values := strings.Fields(line)
 
 	load1, err := strconv.ParseFloat(values[0], 64)
@@ -27,7 +27,7 @@ func parseStatLine(line string) (*LoadStat, error) {
 		return nil, err
 	}
 
-	ret := &LoadStat{
+	ret := &storage.LoadStat{
 		Load1:  load1,
 		Load5:  load5,
 		Load15: load15,
@@ -35,7 +35,7 @@ func parseStatLine(line string) (*LoadStat, error) {
 	return ret, nil
 }
 
-func getLoad(ctx context.Context) (*LoadStat, error) {
+func getLoad() (*storage.LoadStat, error) {
 	lines, err := files.ReadFile("/proc/loadavg")
 	if err != nil {
 		return nil, err
