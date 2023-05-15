@@ -36,14 +36,14 @@ func (a *App) CreateUseCase() stats.UseCase {
 	return stats.New(a.statsConfig, a.logger)
 }
 
-func (a *App) StartMonitoring(ctx context.Context, respDuration, waitPeriod int64, useCase stats.UseCase) (<-chan stats.Stats, error) {
+func (a *App) StartMonitoring(ctx context.Context, rd, wp int64, u stats.UseCase) (<-chan stats.Stats, error) {
 	res := make(chan stats.Stats)
-	responseTicker := time.NewTicker(time.Duration(respDuration) * time.Second)
-	waitDuration := time.Duration(waitPeriod) * time.Second
+	responseTicker := time.NewTicker(time.Duration(rd) * time.Second)
+	waitDuration := time.Duration(wp) * time.Second
 	cleanTicker := time.NewTicker(waitDuration)
 
-	useCase.Connect(ctx)
-	defer useCase.Close(ctx)
+	u.Connect(ctx)
+	defer u.Close(ctx)
 
 	if waitDuration <= a.scanDuration {
 		return res, ErrorScanPeriod
@@ -51,7 +51,7 @@ func (a *App) StartMonitoring(ctx context.Context, respDuration, waitPeriod int6
 
 	go func() {
 		a.logger.Info(fmt.Sprintf("collect data from period: %s", a.scanDuration))
-		if err := useCase.Collect(ctx, a.scanDuration); err != nil {
+		if err := u.Collect(ctx, a.scanDuration); err != nil {
 			a.logger.Error("failed to collect metrics: " + err.Error())
 		}
 	}()
@@ -60,7 +60,7 @@ func (a *App) StartMonitoring(ctx context.Context, respDuration, waitPeriod int6
 		for {
 			select {
 			case <-cleanTicker.C:
-				err := useCase.Clean(ctx, time.Now().Add(-waitDuration))
+				err := u.Clean(ctx, time.Now().Add(-waitDuration))
 				a.logger.Warn("clean done")
 				if err != nil {
 					a.logger.Error("failed to clear storage: ", zap.Error(err))
@@ -77,10 +77,10 @@ func (a *App) StartMonitoring(ctx context.Context, respDuration, waitPeriod int6
 		for {
 			select {
 			case <-responseTicker.C:
-				if respDuration < waitPeriod && time.Now().Before(startTime) {
+				if rd < wp && time.Now().Before(startTime) {
 					continue
 				}
-				stats, err := useCase.GetStats(ctx, waitPeriod)
+				stats, err := u.GetStats(ctx, wp)
 				if err != nil {
 					a.logger.Error("fail get stats", zap.Error(err))
 				}

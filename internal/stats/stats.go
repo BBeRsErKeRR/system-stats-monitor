@@ -97,6 +97,7 @@ func (s *UseCase) Connect(ctx context.Context) error {
 	}
 	return nil
 }
+
 func (s *UseCase) Close(ctx context.Context) error {
 	for _, st := range s.st {
 		err := st.Close(ctx)
