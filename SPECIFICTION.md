@@ -33,9 +33,9 @@
     - [x] использовано мегабайт, % от доступного количества;
     - [x] использовано inode, % от доступного количества.
 
-- [ ] Top talkers по сети:
-    - [ ] по протоколам: protocol (TCP, UDP, ICMP, etc), bytes, % от sum(bytes) за последние **M**), сортируем по убыванию процента;
-    - [ ] по трафику: source ip:port, destination ip:port, protocol, bytes per second (bps), сортируем по убыванию bps.
+- [x] Top talkers по сети:
+    - [x] по протоколам: protocol (TCP, UDP, ICMP, etc), bytes, % от sum(bytes) за последние **M**), сортируем по убыванию процента;
+    - [x] по трафику: source ip:port, destination ip:port, protocol, bytes per second (bps), сортируем по убыванию bps.
 
 - [x] Статистика по сетевым соединениям:
     - [x] слушающие TCP & UDP сокеты: command, pid, user, protocol, port;

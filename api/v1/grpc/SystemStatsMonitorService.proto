@@ -17,6 +17,8 @@ message StatsResponse {
   NetworkStatisticsValue network_statistics_info = 4;
   DiskUsageValue disk_usage_info = 5;
   DiskIoValue disk_io_info = 6;
+  ProtocolTalkersValue protocol_talkers = 7;
+  BpsTalkersValue bps_talkers = 8;
 }
 
 message CPUTimeStatValue {
@@ -69,6 +71,28 @@ message DiskIoItem {
 
 message DiskIoValue {
   repeated DiskIoItem items = 1;
+}
+
+message ProtocolTalkerItem {
+  string protocol = 1;
+  double send_bytes = 2;
+  double bytes_percentage = 3;
+}
+
+message ProtocolTalkersValue {
+  repeated ProtocolTalkerItem items = 1;
+}
+
+message BpsTalkerItem {
+  string source = 1;
+  string destination = 2;
+  string protocol = 3;
+  double bps = 4;
+  double numbers = 5;
+}
+
+message BpsTalkersValue {
+  repeated BpsTalkerItem items = 1;
 }
 
 

@@ -61,7 +61,7 @@ func (a *App) StartMonitoring(ctx context.Context, rd, wp int64, u stats.UseCase
 			select {
 			case <-cleanTicker.C:
 				err := u.Clean(ctx, time.Now().Add(-waitDuration))
-				a.logger.Warn("clean done")
+				a.logger.Info("clean done")
 				if err != nil {
 					a.logger.Error("failed to clear storage: ", zap.Error(err))
 				}

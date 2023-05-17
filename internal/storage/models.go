@@ -51,3 +51,25 @@ type DiskIoStatItem struct {
 type DiskIoStat struct {
 	Items []DiskIoStatItem
 }
+
+type ProtocolTalkerItem struct {
+	Protocol        string  `json:"protocol"`
+	SendBytes       float64 `json:"send_bytes"`       //nolint:tagliatelle
+	BytesPercentage float64 `json:"bytes_percentage"` //nolint:tagliatelle
+}
+
+type ProtocolTalkersStats struct {
+	Items []ProtocolTalkerItem
+}
+
+type BpsItem struct {
+	Source      string  `json:"source"`
+	Destination string  `json:"destination"`
+	Protocol    string  `json:"protocol"`
+	Bps         float64 `json:"bps"`
+	Numbers     float64 `json:"numbers"`
+}
+
+type BpsTalkersStats struct {
+	Items []BpsItem
+}

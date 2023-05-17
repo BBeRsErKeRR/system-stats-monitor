@@ -8,6 +8,7 @@ SHELLOPTS:=$(if $(SHELLOPTS),$(SHELLOPTS):)pipefail:errexit
 
 BIN_DAEMON := "./bin/ssm"
 BIN_CLIENT := "./bin/ssm_client"
+BIN_TEST := "./bin/test"
 
 help: ## Display this help
 	@IFS=$$'\n'; for line in `grep -h -E '^[a-zA-Z_#-]+:?.*?## .*$$' $(MAKEFILE_LIST)`; do if [ "$${line:0:2}" = "##" ]; then \
@@ -35,11 +36,17 @@ run-daemon: build-daemon ## Run monitor app
 run-client: build-client ## Run client app
 	$(BIN_CLIENT) --config ./configs/config_client.toml
 
+build-test:
+	go build -v -o $(BIN_TEST) -ldflags "$(LDFLAGS)" ./cmd/cmd
+
+run-test: build-test ## Run client app
+	$(BIN_TEST)
+
 test: ## Execute tests
-	go test -race ./internal/... ./api/...
+	go test -race -count 100 ./internal/... ./api/... ./pkg/...
 
 coverage: ## Test coverage
-	go test --tags=integration -coverprofile=coverage.out ./internal/... ./api/...
+	go test --tags=integration -coverprofile=coverage.out ./internal/... ./api/... ./pkg/...
 	go tool cover -html coverage.out
 
 install-lint-deps:

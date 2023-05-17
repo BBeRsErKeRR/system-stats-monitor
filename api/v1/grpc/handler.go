@@ -70,6 +70,25 @@ func getStatsResponse(stats stats.Stats) *StatsResponse {
 		})
 	}
 
+	protocolTalkers := make([]*ProtocolTalkerItem, 0, len(stats.ProtocolTalkersInfo.Items))
+	for _, statItem := range stats.ProtocolTalkersInfo.Items {
+		protocolTalkers = append(protocolTalkers, &ProtocolTalkerItem{
+			Protocol:        statItem.Protocol,
+			SendBytes:       statItem.SendBytes,
+			BytesPercentage: statItem.BytesPercentage,
+		})
+	}
+	bpsTalkers := make([]*BpsTalkerItem, 0, len(stats.BpsTalkersInfo.Items))
+	for _, statItem := range stats.BpsTalkersInfo.Items {
+		bpsTalkers = append(bpsTalkers, &BpsTalkerItem{
+			Source:      statItem.Source,
+			Destination: statItem.Destination,
+			Protocol:    statItem.Protocol,
+			Bps:         statItem.Bps,
+			Numbers:     statItem.Numbers,
+		})
+	}
+
 	return &StatsResponse{
 		CpuInfo:          cpuInfo,
 		LoadInfo:         loadInfo,
@@ -82,6 +101,12 @@ func getStatsResponse(stats stats.Stats) *StatsResponse {
 		},
 		DiskIoInfo: &DiskIoValue{
 			Items: dIoItems,
+		},
+		ProtocolTalkers: &ProtocolTalkersValue{
+			Items: protocolTalkers,
+		},
+		BpsTalkers: &BpsTalkersValue{
+			Items: bpsTalkers,
 		},
 	}
 }

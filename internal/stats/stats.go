@@ -14,6 +14,8 @@ import (
 	"github.com/BBeRsErKeRR/system-stats-monitor/internal/monitor/load"
 	networkstates "github.com/BBeRsErKeRR/system-stats-monitor/internal/monitor/network/states"
 	networkstatistics "github.com/BBeRsErKeRR/system-stats-monitor/internal/monitor/network/statistics"
+	bpstalkers "github.com/BBeRsErKeRR/system-stats-monitor/internal/monitor/network/talkers/bps"
+	protocoltalkers "github.com/BBeRsErKeRR/system-stats-monitor/internal/monitor/network/talkers/protocol"
 	"github.com/BBeRsErKeRR/system-stats-monitor/internal/storage"
 	memorystorage "github.com/BBeRsErKeRR/system-stats-monitor/internal/storage/memory"
 	"go.uber.org/zap"
@@ -22,19 +24,22 @@ import (
 var ErrCollector = errors.New("unsupported collector type")
 
 type Config struct {
-	IsCPUEnable     bool `mapstructure:"cpu_enable"`
-	IsLoadEnable    bool `mapstructure:"load_enable"`
-	IsNetworkEnable bool `mapstructure:"network_enable"`
-	IsDiskEnable    bool `mapstructure:"disk_enable"`
+	IsCPUEnable            bool `mapstructure:"cpu_enable"`
+	IsLoadEnable           bool `mapstructure:"load_enable"`
+	IsNetworkEnable        bool `mapstructure:"network_enable"`
+	IsDiskEnable           bool `mapstructure:"disk_enable"`
+	IsNetworkTalkersEnable bool `mapstructure:"network_talkers_enable"`
 }
 
 type Stats struct {
-	CPUInfo               storage.CPUTimeStat       `json:"cpu_info"`                //nolint:tagliatelle
-	LoadInfo              storage.LoadStat          `json:"load_info"`               //nolint:tagliatelle
-	NetworkStateInfo      storage.NetworkStatesStat `json:"network_state_info"`      //nolint:tagliatelle
-	NetworkStatisticsInfo storage.NetworkStats      `json:"network_statistics_info"` //nolint:tagliatelle
-	DiskUsageInfo         storage.UsageStats        `json:"disk_usage_info"`         //nolint:tagliatelle
-	DiskIoInfo            storage.DiskIoStat        `json:"disk_io_info"`            //nolint:tagliatelle
+	CPUInfo               storage.CPUTimeStat          `json:"cpu_info"`                //nolint:tagliatelle
+	LoadInfo              storage.LoadStat             `json:"load_info"`               //nolint:tagliatelle
+	NetworkStateInfo      storage.NetworkStatesStat    `json:"network_state_info"`      //nolint:tagliatelle
+	NetworkStatisticsInfo storage.NetworkStats         `json:"network_statistics_info"` //nolint:tagliatelle
+	DiskUsageInfo         storage.UsageStats           `json:"disk_usage_info"`         //nolint:tagliatelle
+	DiskIoInfo            storage.DiskIoStat           `json:"disk_io_info"`            //nolint:tagliatelle
+	ProtocolTalkersInfo   storage.ProtocolTalkersStats `json:"protocol_talkers"`        //nolint:tagliatelle
+	BpsTalkersInfo        storage.BpsTalkersStats      `json:"bps_talkers"`             //nolint:tagliatelle
 }
 
 type UseCase struct {
@@ -50,31 +55,45 @@ func createStorage() storage.Storage {
 
 func New(cfg *Config, logger logger.Logger) UseCase {
 	collectors := make([]monitor.Collector, 0, 1)
+	constantCollectors := make([]monitor.ConstantCollector, 0, 1)
 	st := make(map[string]storage.Storage)
+
 	if cfg.IsCPUEnable {
 		st["cpu"] = createStorage()
 		collectors = append(collectors, cpu.New(st["cpu"], logger))
 	}
+
 	if cfg.IsLoadEnable {
 		st["load"] = createStorage()
 		collectors = append(collectors, load.New(st["load"], logger))
 	}
+
 	if cfg.IsNetworkEnable {
 		st["networkstates"] = createStorage()
 		st["networkstatistics"] = createStorage()
 		collectors = append(collectors, networkstates.New(st["networkstates"], logger))
 		collectors = append(collectors, networkstatistics.New(st["networkstatistics"], logger))
 	}
+
 	if cfg.IsDiskEnable {
 		st["diskusage"] = createStorage()
 		st["diskio"] = createStorage()
 		collectors = append(collectors, diskusage.New(st["diskusage"], logger))
 		collectors = append(collectors, diskio.New(st["diskio"], logger))
 	}
+
+	if cfg.IsNetworkTalkersEnable {
+		st["protocol_talkers"] = createStorage()
+		st["bps_talkers"] = createStorage()
+		constantCollectors = append(constantCollectors, protocoltalkers.New(st["protocol_talkers"], logger))
+		constantCollectors = append(constantCollectors, bpstalkers.New(st["bps_talkers"], logger))
+	}
+
 	return UseCase{
-		collectors: collectors,
-		st:         st,
-		logger:     logger,
+		collectors:         collectors,
+		constantCollectors: constantCollectors,
+		st:                 st,
+		logger:             logger,
 	}
 }
 
@@ -180,6 +199,23 @@ func (s *UseCase) GetStats(ctx context.Context, duration int64) (Stats, error) {
 			stats.DiskUsageInfo = v
 		case storage.DiskIoStat:
 			stats.DiskIoInfo = v
+		case storage.ProtocolTalkersStats:
+			stats.ProtocolTalkersInfo = v
+		default:
+			return stats, ErrCollector
+		}
+	}
+
+	for _, collector := range s.constantCollectors {
+		statsItem, err := collector.GetStats(ctx, duration)
+		if err != nil {
+			return stats, err
+		}
+		switch v := statsItem.(type) {
+		case storage.ProtocolTalkersStats:
+			stats.ProtocolTalkersInfo = v
+		case storage.BpsTalkersStats:
+			stats.BpsTalkersInfo = v
 		default:
 			return stats, ErrCollector
 		}
