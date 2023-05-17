@@ -10,14 +10,12 @@ import (
 )
 
 type NSCollector struct {
-	name   string
 	st     storage.Storage
 	logger logger.Logger
 }
 
 func New(st storage.Storage, logger logger.Logger) *NSCollector {
 	return &NSCollector{
-		name:   "network_statistics",
 		st:     st,
 		logger: logger,
 	}
@@ -29,7 +27,7 @@ func (c *NSCollector) Grab(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	err = c.st.BulkStoreStats(ctx, c.name, stats)
+	err = c.st.StoreNetworkStats(ctx, stats)
 	if err != nil {
 		return err
 	}
@@ -38,7 +36,7 @@ func (c *NSCollector) Grab(ctx context.Context) error {
 }
 
 func (c *NSCollector) GetStats(ctx context.Context, period int64) (interface{}, error) {
-	nsStats, err := c.st.GetStats(ctx, c.name, period)
+	nsStats, err := c.st.GetNetworkStats(ctx, period)
 	if err != nil {
 		return nil, err
 	}

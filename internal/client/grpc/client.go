@@ -123,11 +123,21 @@ func (c *Client) printStats(data *v1grpc.StatsResponse) {
 	fmt.Println("\nTalkers:")
 	fmt.Println("  Protocol:")
 	for _, item := range data.GetProtocolTalkers().Items {
-		fmt.Printf("    %s: %v  %v%%\n", item.Protocol, convertFloat(item.SendBytes), convertFloat(item.BytesPercentage))
+		fmt.Printf("    %s: %v  %v%%\n",
+			item.Protocol,
+			convertFloat(item.SendBytes),
+			convertFloat(item.BytesPercentage),
+		)
 	}
 	fmt.Println("  Protocol:")
 	for _, item := range data.GetBpsTalkers().Items {
-		fmt.Printf("    (%s) %s -> %s: %v  %v b/s\n", item.Protocol, item.Source, item.Destination, convertFloat(item.Numbers), convertFloat(item.Bps))
+		fmt.Printf("    (%s) %s -> %s: %v  %v b/s\n",
+			item.Protocol,
+			item.Source,
+			item.Destination,
+			convertFloat(item.Numbers),
+			convertFloat(item.Bps),
+		)
 	}
 	fmt.Println()
 }

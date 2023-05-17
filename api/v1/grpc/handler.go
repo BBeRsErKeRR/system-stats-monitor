@@ -112,8 +112,15 @@ func getStatsResponse(stats stats.Stats) *StatsResponse {
 }
 
 func (h *Handler) StartMonitoring(req *StartMonitoringRequest, srv SystemStatsMonitorServiceV1_StartMonitoringServer) error { //nolint:lll
-	useCase := h.app.CreateUseCase()
-	result, err := h.app.StartMonitoring(srv.Context(), req.GetResponseDuration(), req.GetWaitDuration(), useCase)
+	st := h.app.CreateStorage()
+	ctx := srv.Context()
+	err := st.Connect(ctx)
+	if err != nil {
+		return err
+	}
+	defer st.Close(ctx)
+	useCase := h.app.CreateUseCase(st)
+	result, err := h.app.StartMonitoring(ctx, req.GetResponseDuration(), req.GetWaitDuration(), useCase)
 	if err != nil {
 		return err
 	}

@@ -12,10 +12,10 @@ import (
 	"github.com/BBeRsErKeRR/system-stats-monitor/pkg/command"
 )
 
-func parseDfOut(outK, outI string) ([]interface{}, error) {
+func parseDfOut(outK, outI string) ([]storage.UsageStatItem, error) {
 	lines := strings.Split(outK, "\n")
 	linesI := strings.Split(outI, "\n")
-	result := make([]interface{}, 0, len(outK)-1)
+	result := make([]storage.UsageStatItem, 0, len(outK)-1)
 	buff := make(map[string]storage.UsageStatItem)
 
 	for _, line := range lines[1:] {
@@ -65,7 +65,7 @@ func parseDfOut(outK, outI string) ([]interface{}, error) {
 	return result, nil
 }
 
-func getDU(ctx context.Context) ([]interface{}, error) {
+func getDU(ctx context.Context) ([]storage.UsageStatItem, error) {
 	outK, err := command.WithContext(ctx, "df", "-k")
 	if err != nil {
 		return nil, err

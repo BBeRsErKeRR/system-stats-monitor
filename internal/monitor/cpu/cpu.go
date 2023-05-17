@@ -16,14 +16,12 @@ func NewCPUTimeStat(user, system, idle float64) storage.CPUTimeStat {
 }
 
 type StatCollector struct {
-	name   string
 	st     storage.Storage
 	logger logger.Logger
 }
 
 func New(st storage.Storage, logger logger.Logger) *StatCollector {
 	return &StatCollector{
-		name:   "cpu",
 		st:     st,
 		logger: logger,
 	}
@@ -35,7 +33,7 @@ func (c *StatCollector) Grab(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	err = c.st.StoreStats(ctx, c.name, *times)
+	err = c.st.StoreCPUTimeStat(ctx, *times)
 	if err != nil {
 		return err
 	}
@@ -45,7 +43,7 @@ func (c *StatCollector) Grab(ctx context.Context) error {
 
 func (c *StatCollector) GetStats(ctx context.Context, period int64) (interface{}, error) {
 	var sumUser, sumSystem, sumIdle float64
-	lastCPUTimes, err := c.st.GetStats(ctx, c.name, period)
+	lastCPUTimes, err := c.st.GetCPUTimeStats(ctx, period)
 	if err != nil {
 		return nil, err
 	}

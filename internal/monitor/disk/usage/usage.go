@@ -10,14 +10,12 @@ import (
 )
 
 type UsageCollector struct {
-	name   string
 	st     storage.Storage
 	logger logger.Logger
 }
 
 func New(st storage.Storage, logger logger.Logger) *UsageCollector {
 	return &UsageCollector{
-		name:   "du",
 		st:     st,
 		logger: logger,
 	}
@@ -30,7 +28,7 @@ func (c *UsageCollector) Grab(ctx context.Context) error {
 		return err
 	}
 	for _, stat := range stats {
-		err = c.st.StoreStats(ctx, c.name, stat)
+		err = c.st.StoreUsageStat(ctx, stat)
 		if err != nil {
 			return err
 		}
@@ -40,7 +38,7 @@ func (c *UsageCollector) Grab(ctx context.Context) error {
 }
 
 func (c *UsageCollector) GetStats(ctx context.Context, period int64) (interface{}, error) {
-	stats, err := c.st.GetStats(ctx, c.name, period)
+	stats, err := c.st.GetUsageStats(ctx, period)
 	if err != nil {
 		return nil, err
 	}

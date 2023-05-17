@@ -8,14 +8,12 @@ import (
 )
 
 type StatCollector struct {
-	name   string
 	st     storage.Storage
 	logger logger.Logger
 }
 
 func New(st storage.Storage, logger logger.Logger) *StatCollector {
 	return &StatCollector{
-		name:   "load",
 		st:     st,
 		logger: logger,
 	}
@@ -27,7 +25,7 @@ func (c *StatCollector) Grab(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	err = c.st.StoreStats(ctx, c.name, *la)
+	err = c.st.StoreLoadStat(ctx, *la)
 	if err != nil {
 		return err
 	}
@@ -37,7 +35,7 @@ func (c *StatCollector) Grab(ctx context.Context) error {
 
 func (c *StatCollector) GetStats(ctx context.Context, period int64) (interface{}, error) {
 	var sumLoad1, sumLoad5, sumLoad15 float64
-	lastLoadStats, err := c.st.GetStats(ctx, c.name, period)
+	lastLoadStats, err := c.st.GetLoadStats(ctx, period)
 	if err != nil {
 		return nil, err
 	}

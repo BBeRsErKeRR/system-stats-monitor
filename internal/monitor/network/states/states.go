@@ -15,7 +15,6 @@ type StatCollector struct {
 
 func New(st storage.Storage, logger logger.Logger) *StatCollector {
 	return &StatCollector{
-		name:   "network_sates",
 		st:     st,
 		logger: logger,
 	}
@@ -27,7 +26,7 @@ func (c *StatCollector) Grab(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	err = c.st.StoreStats(ctx, c.name, *stat)
+	err = c.st.StoreNetworkStatesStat(ctx, *stat)
 	if err != nil {
 		return err
 	}
@@ -37,7 +36,7 @@ func (c *StatCollector) Grab(ctx context.Context) error {
 
 func (c *StatCollector) GetStats(ctx context.Context, period int64) (interface{}, error) {
 	avgNs := make(map[string]int32)
-	nsStats, err := c.st.GetStats(ctx, c.name, period)
+	nsStats, err := c.st.GetNetworkStatesStats(ctx, period)
 	if err != nil {
 		return nil, err
 	}

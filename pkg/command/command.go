@@ -54,7 +54,7 @@ func Stream(ctx context.Context, name string, arg ...string) (chan string, chan 
 		}
 
 		if err := cmd.Wait(); err != nil {
-			scannerErrors <- fmt.Errorf("%s %v", bufErr.String(), err)
+			scannerErrors <- fmt.Errorf("%s %w", bufErr.String(), err)
 		}
 	}()
 

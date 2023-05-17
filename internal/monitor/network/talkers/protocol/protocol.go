@@ -11,14 +11,12 @@ import (
 )
 
 type StatCollector struct {
-	name   string
 	st     storage.Storage
 	logger logger.Logger
 }
 
 func New(st storage.Storage, logger logger.Logger) *StatCollector {
 	return &StatCollector{
-		name:   "proto_talkers",
 		st:     st,
 		logger: logger,
 	}
@@ -34,8 +32,7 @@ func (c *StatCollector) GrabSub(ctx context.Context) error {
 			if !ok {
 				return nil
 			}
-			// c.logger.Info(fmt.Sprintf("receive new data: %v", stat))
-			err := c.st.StoreStats(ctx, c.name, stat)
+			err := c.st.StoreProtocolTalkersStat(ctx, stat)
 			if err != nil {
 				return err
 			}
@@ -52,7 +49,7 @@ func (c *StatCollector) GrabSub(ctx context.Context) error {
 }
 
 func (c *StatCollector) GetStats(ctx context.Context, period int64) (interface{}, error) {
-	nsStats, err := c.st.GetStats(ctx, c.name, period)
+	nsStats, err := c.st.GetProtocolTalkersStats(ctx, period)
 	if err != nil {
 		return nil, err
 	}

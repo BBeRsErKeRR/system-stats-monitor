@@ -17,7 +17,6 @@ import (
 	bpstalkers "github.com/BBeRsErKeRR/system-stats-monitor/internal/monitor/network/talkers/bps"
 	protocoltalkers "github.com/BBeRsErKeRR/system-stats-monitor/internal/monitor/network/talkers/protocol"
 	"github.com/BBeRsErKeRR/system-stats-monitor/internal/storage"
-	memorystorage "github.com/BBeRsErKeRR/system-stats-monitor/internal/storage/memory"
 	"go.uber.org/zap"
 )
 
@@ -44,49 +43,36 @@ type Stats struct {
 
 type UseCase struct {
 	logger             logger.Logger
-	st                 map[string]storage.Storage
+	st                 storage.Storage
 	collectors         []monitor.Collector
 	constantCollectors []monitor.ConstantCollector
 }
 
-func createStorage() storage.Storage {
-	return memorystorage.New()
-}
-
-func New(cfg *Config, logger logger.Logger) UseCase {
+func New(cfg *Config, st storage.Storage, logger logger.Logger) UseCase {
 	collectors := make([]monitor.Collector, 0, 1)
 	constantCollectors := make([]monitor.ConstantCollector, 0, 1)
-	st := make(map[string]storage.Storage)
 
 	if cfg.IsCPUEnable {
-		st["cpu"] = createStorage()
-		collectors = append(collectors, cpu.New(st["cpu"], logger))
+		collectors = append(collectors, cpu.New(st, logger))
 	}
 
 	if cfg.IsLoadEnable {
-		st["load"] = createStorage()
-		collectors = append(collectors, load.New(st["load"], logger))
+		collectors = append(collectors, load.New(st, logger))
 	}
 
 	if cfg.IsNetworkEnable {
-		st["networkstates"] = createStorage()
-		st["networkstatistics"] = createStorage()
-		collectors = append(collectors, networkstates.New(st["networkstates"], logger))
-		collectors = append(collectors, networkstatistics.New(st["networkstatistics"], logger))
+		collectors = append(collectors, networkstates.New(st, logger))
+		collectors = append(collectors, networkstatistics.New(st, logger))
 	}
 
 	if cfg.IsDiskEnable {
-		st["diskusage"] = createStorage()
-		st["diskio"] = createStorage()
-		collectors = append(collectors, diskusage.New(st["diskusage"], logger))
-		collectors = append(collectors, diskio.New(st["diskio"], logger))
+		collectors = append(collectors, diskusage.New(st, logger))
+		collectors = append(collectors, diskio.New(st, logger))
 	}
 
 	if cfg.IsNetworkTalkersEnable {
-		st["protocol_talkers"] = createStorage()
-		st["bps_talkers"] = createStorage()
-		constantCollectors = append(constantCollectors, protocoltalkers.New(st["protocol_talkers"], logger))
-		constantCollectors = append(constantCollectors, bpstalkers.New(st["bps_talkers"], logger))
+		constantCollectors = append(constantCollectors, protocoltalkers.New(st, logger))
+		constantCollectors = append(constantCollectors, bpstalkers.New(st, logger))
 	}
 
 	return UseCase{
@@ -98,33 +84,7 @@ func New(cfg *Config, logger logger.Logger) UseCase {
 }
 
 func (s *UseCase) Clean(ctx context.Context, date time.Time) error {
-	for _, st := range s.st {
-		err := st.Clear(ctx, date)
-		if err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-func (s *UseCase) Connect(ctx context.Context) error {
-	for _, st := range s.st {
-		err := st.Connect(ctx)
-		if err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-func (s *UseCase) Close(ctx context.Context) error {
-	for _, st := range s.st {
-		err := st.Close(ctx)
-		if err != nil {
-			return err
-		}
-	}
-	return nil
+	return s.st.Clear(ctx, date)
 }
 
 func (s *UseCase) collectPeriodic(ctx context.Context, duration time.Duration) {

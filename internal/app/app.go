@@ -8,6 +8,8 @@ import (
 
 	"github.com/BBeRsErKeRR/system-stats-monitor/internal/logger"
 	"github.com/BBeRsErKeRR/system-stats-monitor/internal/stats"
+	"github.com/BBeRsErKeRR/system-stats-monitor/internal/storage"
+	memorystorage "github.com/BBeRsErKeRR/system-stats-monitor/internal/storage/memory"
 	"go.uber.org/zap"
 )
 
@@ -32,8 +34,12 @@ func New(logger logger.Logger, config *Config, configS *stats.Config) *App {
 	}
 }
 
-func (a *App) CreateUseCase() stats.UseCase {
-	return stats.New(a.statsConfig, a.logger)
+func (a *App) CreateStorage() storage.Storage {
+	return memorystorage.New()
+}
+
+func (a *App) CreateUseCase(st storage.Storage) stats.UseCase {
+	return stats.New(a.statsConfig, st, a.logger)
 }
 
 func (a *App) StartMonitoring(ctx context.Context, rd, wp int64, u stats.UseCase) (<-chan stats.Stats, error) {
@@ -41,9 +47,6 @@ func (a *App) StartMonitoring(ctx context.Context, rd, wp int64, u stats.UseCase
 	responseTicker := time.NewTicker(time.Duration(rd) * time.Second)
 	waitDuration := time.Duration(wp) * time.Second
 	cleanTicker := time.NewTicker(waitDuration)
-
-	u.Connect(ctx)
-	defer u.Close(ctx)
 
 	if waitDuration <= a.scanDuration {
 		return res, ErrorScanPeriod

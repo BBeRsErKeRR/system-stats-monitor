@@ -11,14 +11,12 @@ import (
 )
 
 type StatCollector struct {
-	name   string
 	st     storage.Storage
 	logger logger.Logger
 }
 
 func New(st storage.Storage, logger logger.Logger) *StatCollector {
 	return &StatCollector{
-		name:   "bps_talkers",
 		st:     st,
 		logger: logger,
 	}
@@ -34,7 +32,7 @@ func (c *StatCollector) GrabSub(ctx context.Context) error {
 			if !ok {
 				return nil
 			}
-			err := c.st.StoreStats(ctx, c.name, stat)
+			err := c.st.StoreBpsTalkersStat(ctx, stat)
 			if err != nil {
 				return err
 			}
@@ -51,7 +49,7 @@ func (c *StatCollector) GrabSub(ctx context.Context) error {
 }
 
 func (c *StatCollector) GetStats(ctx context.Context, period int64) (interface{}, error) {
-	nsStats, err := c.st.GetStats(ctx, c.name, period)
+	nsStats, err := c.st.GetBpsTalkersStats(ctx, period)
 	if err != nil {
 		return nil, err
 	}
@@ -78,7 +76,7 @@ func (c *StatCollector) collectUnique(intSlice []storage.Metric, period int64) [
 	}
 	seconds := float64(period)
 	for _, elem := range unique {
-		elem.Bps = elem.Numbers / float64(seconds)
+		elem.Bps = elem.Numbers / seconds
 		list = append(list, elem)
 	}
 

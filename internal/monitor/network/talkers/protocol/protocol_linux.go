@@ -13,7 +13,7 @@ import (
 	command "github.com/BBeRsErKeRR/system-stats-monitor/pkg/command"
 )
 
-func parseTcpDumpOut(line string) (interface{}, error) {
+func parseTCPDumpOut(line string) (interface{}, error) {
 	fields := strings.Fields(line)
 	length := len(fields)
 	if length < 5 {
@@ -43,7 +43,7 @@ func parseTcpDumpOut(line string) (interface{}, error) {
 	return item, nil
 }
 
-func getTalkers(ctx context.Context) (<-chan interface{}, <-chan error) {
+func getTalkers(ctx context.Context) (<-chan storage.ProtocolTalkerItem, <-chan error) {
 	executor := func() (chan string, chan error) {
 		var out chan string
 		var errC chan error
@@ -57,8 +57,8 @@ func getTalkers(ctx context.Context) (<-chan interface{}, <-chan error) {
 		return out, errC
 	}
 
-	parser := func(In <-chan string, errC <-chan error) (<-chan interface{}, <-chan error) {
-		res := make(chan interface{})
+	parser := func(In <-chan string, errC <-chan error) (<-chan storage.ProtocolTalkerItem, <-chan error) {
+		res := make(chan storage.ProtocolTalkerItem)
 		resErr := make(chan error)
 		go func() {
 			defer close(res)
@@ -74,14 +74,14 @@ func getTalkers(ctx context.Context) (<-chan interface{}, <-chan error) {
 					if !ok {
 						return
 					}
-					content, err := parseTcpDumpOut(stOut)
+					content, err := parseTCPDumpOut(stOut)
 					if err != nil {
 						resErr <- err
 					}
 					if content == nil {
 						continue
 					}
-					res <- content
+					res <- content.(storage.ProtocolTalkerItem)
 				}
 			}
 		}()

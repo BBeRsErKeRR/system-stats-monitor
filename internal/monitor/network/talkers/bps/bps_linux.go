@@ -13,7 +13,7 @@ import (
 	command "github.com/BBeRsErKeRR/system-stats-monitor/pkg/command"
 )
 
-func parseTcpDumpOut(line string) (interface{}, error) {
+func parseTCPDumpOut(line string) (interface{}, error) {
 	fields := strings.Fields(line)
 	length := len(fields)
 	if length < 8 {
@@ -46,7 +46,7 @@ func parseTcpDumpOut(line string) (interface{}, error) {
 	return item, nil
 }
 
-func getBps(ctx context.Context) (<-chan interface{}, <-chan error) {
+func getBps(ctx context.Context) (<-chan storage.BpsItem, <-chan error) {
 	executor := func() (chan string, chan error) {
 		var out chan string
 		var errC chan error
@@ -60,8 +60,8 @@ func getBps(ctx context.Context) (<-chan interface{}, <-chan error) {
 		return out, errC
 	}
 
-	parser := func(In <-chan string, errC <-chan error) (<-chan interface{}, <-chan error) {
-		res := make(chan interface{})
+	parser := func(In <-chan string, errC <-chan error) (<-chan storage.BpsItem, <-chan error) {
+		res := make(chan storage.BpsItem)
 		resErr := make(chan error)
 		go func() {
 			defer close(res)
@@ -80,14 +80,14 @@ func getBps(ctx context.Context) (<-chan interface{}, <-chan error) {
 					if strings.Contains(stOut, ", ack") {
 						continue
 					}
-					content, err := parseTcpDumpOut(stOut)
+					content, err := parseTCPDumpOut(stOut)
 					if err != nil {
 						resErr <- err
 					}
 					if content == nil {
 						continue
 					}
-					res <- content
+					res <- content.(storage.BpsItem)
 				}
 			}
 		}()

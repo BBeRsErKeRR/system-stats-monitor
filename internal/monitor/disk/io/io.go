@@ -17,14 +17,12 @@ func NewDiskIoStatItem(device string, tps, kbReadS, kbWriteS float64) storage.Di
 }
 
 type StatCollector struct {
-	name   string
 	st     storage.Storage
 	logger logger.Logger
 }
 
 func New(st storage.Storage, logger logger.Logger) *StatCollector {
 	return &StatCollector{
-		name:   "io",
 		st:     st,
 		logger: logger,
 	}
@@ -36,7 +34,7 @@ func (c *StatCollector) Grab(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	err = c.st.BulkStoreStats(ctx, c.name, ios)
+	err = c.st.StorDiskIoStats(ctx, ios)
 	if err != nil {
 		return err
 	}
@@ -45,7 +43,7 @@ func (c *StatCollector) Grab(ctx context.Context) error {
 }
 
 func (c *StatCollector) GetStats(ctx context.Context, period int64) (interface{}, error) {
-	statsItems, err := c.st.GetStats(ctx, c.name, period)
+	statsItems, err := c.st.GetDiskIoStats(ctx, period)
 	if err != nil {
 		return nil, err
 	}
