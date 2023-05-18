@@ -27,9 +27,11 @@ func New(st storage.Storage, logger logger.Logger) *StatCollector {
 	}
 }
 
+var commandRunner = getCPUTimes
+
 func (c *StatCollector) Grab(ctx context.Context) error {
 	c.logger.Info("start collect data")
-	times, err := getCPUTimes()
+	times, err := commandRunner()
 	if err != nil {
 		return err
 	}

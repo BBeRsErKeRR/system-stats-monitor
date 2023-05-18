@@ -135,7 +135,6 @@ func (st *Storage) Clear(ctx context.Context, date time.Time) error {
 	default:
 		return nil
 	}
-
 }
 
 func (st *Storage) Connect(ctx context.Context) error {

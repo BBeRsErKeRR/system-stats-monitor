@@ -28,9 +28,11 @@ func New(st storage.Storage, logger logger.Logger) *StatCollector {
 	}
 }
 
+var commandRunner = collectDiskIo
+
 func (c *StatCollector) Grab(ctx context.Context) error {
 	c.logger.Info("start collect data")
-	ios, err := collectDiskIo(ctx)
+	ios, err := commandRunner(ctx)
 	if err != nil {
 		return err
 	}

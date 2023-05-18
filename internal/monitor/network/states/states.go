@@ -8,7 +8,6 @@ import (
 )
 
 type StatCollector struct {
-	name   string
 	st     storage.Storage
 	logger logger.Logger
 }

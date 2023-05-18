@@ -5,15 +5,22 @@ package diskio
 
 import (
 	"context"
+	"errors"
 	"strconv"
 	"strings"
 
 	command "github.com/BBeRsErKeRR/system-stats-monitor/pkg/command"
 )
 
+var ErrOutput = errors.New("bad output")
+
 func parseSSOut(output string) ([]interface{}, error) {
 	lines := strings.Split(output, "\n")
-	result := make([]interface{}, 0, len(output)-3)
+	length := len(output)
+	if length < 3 {
+		return []interface{}{}, ErrOutput
+	}
+	result := make([]interface{}, 0, length-3)
 	for _, line := range lines[3:] {
 		fields := strings.Fields(line)
 		if len(fields) < 1 {
