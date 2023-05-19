@@ -5,7 +5,6 @@ package networkstatistics
 
 import (
 	"context"
-	"fmt"
 	"os"
 	"strconv"
 	"strings"
@@ -23,11 +22,8 @@ func parseNetstatOut(output string) ([]interface{}, error) {
 	result := make([]interface{}, 0, len(output)-startLine)
 	for _, line := range lines[startLine:] {
 		values := strings.Fields(line)
-		if len(values) < 1 {
+		if len(values) < 9 || values[5] != "LISTEN" {
 			continue
-		}
-		if len(values) < 9 {
-			return result, fmt.Errorf("could not parse: '%s'", line)
 		}
 
 		user, err := strconv.ParseInt(values[6], 10, 32)
