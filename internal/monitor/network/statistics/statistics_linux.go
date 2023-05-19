@@ -5,6 +5,7 @@ package networkstatistics
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"strconv"
 	"strings"
@@ -24,6 +25,9 @@ func parseNetstatOut(output string) ([]interface{}, error) {
 		values := strings.Fields(line)
 		if len(values) < 1 {
 			continue
+		}
+		if len(values) < 8 {
+			return result, fmt.Errorf("could not parse: '%s'", line)
 		}
 		pidWithCommand := strings.Split(values[8], "/")
 
