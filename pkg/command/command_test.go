@@ -22,7 +22,7 @@ func TestBadWithContext(t *testing.T) {
 
 func TestStream(t *testing.T) {
 	ctx := context.Background()
-	chanO, chanErr := Stream(ctx, "ls", "-lah")
+	chanO, chanErr := Stream(ctx, "ls", "-la")
 	for {
 		select {
 		case <-ctx.Done():

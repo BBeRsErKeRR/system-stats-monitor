@@ -55,7 +55,7 @@ func parseNetstatOut(output string) ([]interface{}, error) {
 func getNS(ctx context.Context) ([]interface{}, error) {
 	var out []byte
 	var err error
-	if os.Geteuid() == 0 {
+	if os.Geteuid() == 0 { //nolint:nestif
 		out, err = command.WithContext(ctx, "netstat", "-lntupe")
 		if err != nil {
 			return nil, err

@@ -8,7 +8,6 @@ import (
 )
 
 func TestCollectDiskIo(t *testing.T) {
-
 	tests := []struct {
 		name               string
 		output             string

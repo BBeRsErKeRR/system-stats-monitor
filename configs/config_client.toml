@@ -1,10 +1,11 @@
 [logger]
 level = "DEBUG"
-out_paths = ["stderr"]
-err_paths = ["stderr"]
+out_paths = []
+err_paths = []
 
 [app.grpc_client]
+termui_enable = true
 host = "0.0.0.0"
 port = "9080"
-response_duration = "5s"
-wait_duration = "15s"
+response_duration = "3s"
+wait_duration = "5s"

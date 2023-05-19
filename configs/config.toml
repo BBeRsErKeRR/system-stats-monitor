@@ -4,7 +4,7 @@ out_paths = ["stdout"]
 err_paths = ["stderr"]
 
 [app]
-scan_duration = "5s"
+scan_duration = "2s"
 
 [grpc_server]
 host = "0.0.0.0"
