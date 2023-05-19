@@ -26,31 +26,37 @@ func parseNetstatOut(output string) ([]interface{}, error) {
 		if len(values) < 1 {
 			continue
 		}
-		if len(values) < 8 {
+		if len(values) < 9 {
 			return result, fmt.Errorf("could not parse: '%s'", line)
 		}
-		pidWithCommand := strings.Split(values[8], "/")
 
-		pid, err := strconv.ParseInt(pidWithCommand[0], 10, 32)
-		if err != nil {
-			return nil, err
-		}
 		user, err := strconv.ParseInt(values[6], 10, 32)
 		if err != nil {
 			return nil, err
 		}
+
 		portAddress := strings.Split(values[3], ":")
 		port, err := strconv.ParseInt(portAddress[len(portAddress)-1], 10, 32)
 		if err != nil {
 			return nil, err
 		}
+
 		item := storage.NetworkStatsItem{
-			Command:  strings.Join(pidWithCommand[1:], "/"),
-			PID:      int32(pid),
 			User:     int32(user),
 			Protocol: values[0],
 			Port:     int32(port),
 		}
+
+		if values[8] != "-" {
+			pidWithCommand := strings.Split(values[8], "/")
+			item.Command = strings.Join(pidWithCommand[1:], "/")
+			pid, err := strconv.ParseInt(pidWithCommand[0], 10, 32)
+			if err != nil {
+				return nil, err
+			}
+			item.PID = int32(pid)
+		}
+
 		result = append(result, item)
 	}
 	return result, nil
