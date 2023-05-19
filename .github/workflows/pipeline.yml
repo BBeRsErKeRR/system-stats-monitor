@@ -5,7 +5,7 @@ on:
 
 jobs:  
   build-and-test:
-    name: build-and-test
+    name: lint
     strategy:
       fail-fast: false
       matrix:
@@ -30,3 +30,12 @@ jobs:
     
     - name: make test
       run: make test
+  coverage:
+    needs: build-and-test
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    steps:
+    - name: Coveralls Finished
+      uses: coverallsapp/github-action@v2
+      with:
+        parallel-finished: true
