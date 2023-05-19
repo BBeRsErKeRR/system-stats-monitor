@@ -41,7 +41,7 @@ var rootCmd = &cobra.Command{
 		defer client.Close()
 
 		go func() {
-			if err := client.StartMonitoring(ctx); err != nil {
+			if err := client.StartMonitoring(ctx, cancel); err != nil {
 				logg.Error("failed to start get data: " + err.Error())
 				cancel()
 			}

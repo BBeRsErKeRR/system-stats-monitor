@@ -4,6 +4,7 @@ import (
 	router "github.com/BBeRsErKeRR/system-stats-monitor/api"
 	"github.com/BBeRsErKeRR/system-stats-monitor/internal/logger"
 	"github.com/BBeRsErKeRR/system-stats-monitor/internal/stats"
+	"github.com/BBeRsErKeRR/system-stats-monitor/internal/storage"
 	"go.uber.org/zap"
 )
 
@@ -106,6 +107,90 @@ func getStatsResponse(stats stats.Stats) *StatsResponse {
 			Items: protocolTalkers,
 		},
 		BpsTalkers: &BpsTalkersValue{
+			Items: bpsTalkers,
+		},
+	}
+}
+
+func ResolveResponse(resp *StatsResponse) *stats.Stats {
+	statisticsItems := make([]storage.NetworkStatsItem, 0, len(resp.GetNetworkStatisticsInfo().GetItems()))
+	for _, statItem := range resp.GetNetworkStatisticsInfo().GetItems() {
+		statisticsItems = append(statisticsItems, storage.NetworkStatsItem{
+			Command:  statItem.Command,
+			PID:      statItem.Pid,
+			User:     statItem.User,
+			Protocol: statItem.Protocol,
+			Port:     statItem.Port,
+		})
+	}
+
+	duItems := make([]storage.UsageStatItem, 0, len(resp.GetDiskUsageInfo().GetItems()))
+	for _, respItem := range resp.GetDiskUsageInfo().GetItems() {
+		duItems = append(duItems, storage.UsageStatItem{
+			Path:                   respItem.Path,
+			Fstype:                 respItem.Fstype,
+			Used:                   respItem.Used,
+			AvailablePercent:       respItem.AvailablePercent,
+			InodesUsed:             respItem.InodeUsed,
+			InodesAvailablePercent: respItem.InodesAvailablePercent,
+		})
+	}
+
+	dIoItems := make([]storage.DiskIoStatItem, 0, len(resp.GetDiskIoInfo().GetItems()))
+	for _, statItem := range resp.GetDiskIoInfo().GetItems() {
+		dIoItems = append(dIoItems, storage.DiskIoStatItem{
+			Device:   statItem.Device,
+			Tps:      statItem.Tps,
+			KbReadS:  statItem.KbReadS,
+			KbWriteS: statItem.KbWriteS,
+		})
+	}
+
+	protocolTalkers := make([]storage.ProtocolTalkerItem, 0, len(resp.GetProtocolTalkers().GetItems()))
+	for _, statItem := range resp.GetProtocolTalkers().GetItems() {
+		protocolTalkers = append(protocolTalkers, storage.ProtocolTalkerItem{
+			Protocol:        statItem.Protocol,
+			SendBytes:       statItem.SendBytes,
+			BytesPercentage: statItem.BytesPercentage,
+		})
+	}
+	bpsTalkers := make([]storage.BpsItem, 0, len(resp.GetBpsTalkers().GetItems()))
+	for _, statItem := range resp.GetBpsTalkers().GetItems() {
+		bpsTalkers = append(bpsTalkers, storage.BpsItem{
+			Source:      statItem.Source,
+			Destination: statItem.Destination,
+			Protocol:    statItem.Protocol,
+			Bps:         statItem.Bps,
+			Numbers:     statItem.Numbers,
+		})
+	}
+	return &stats.Stats{
+		CPUInfo: storage.CPUTimeStat{
+			User:   resp.GetCpuInfo().GetUser(),
+			System: resp.GetCpuInfo().GetSystem(),
+			Idle:   resp.GetCpuInfo().GetIdle(),
+		},
+		LoadInfo: storage.LoadStat{
+			Load1:  resp.GetLoadInfo().GetLoad1(),
+			Load5:  resp.GetLoadInfo().GetLoad5(),
+			Load15: resp.GetLoadInfo().GetLoad15(),
+		},
+		NetworkStateInfo: storage.NetworkStatesStat{
+			Counters: resp.GetNetworkStateInfo().GetCounters(),
+		},
+		NetworkStatisticsInfo: storage.NetworkStats{
+			Items: statisticsItems,
+		},
+		DiskUsageInfo: storage.UsageStats{
+			Items: duItems,
+		},
+		DiskIoInfo: storage.DiskIoStat{
+			Items: dIoItems,
+		},
+		ProtocolTalkersInfo: storage.ProtocolTalkersStats{
+			Items: protocolTalkers,
+		},
+		BpsTalkersInfo: storage.BpsTalkersStats{
 			Items: bpsTalkers,
 		},
 	}
