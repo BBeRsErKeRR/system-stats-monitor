@@ -5,13 +5,12 @@ on:
 
 jobs:  
   build-and-test:
+    name: build-and-test
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-20.04, ubuntu-18.04] #, windows-2019, macos-11
+        os: [ubuntu-20.04,] #, windows-2019, macos-11
         include:
-          - os: ubuntu-20.04
-            packages: sysstat
           - os: ubuntu-20.04
             packages: sysstat
     runs-on: ${{ matrix.os }}

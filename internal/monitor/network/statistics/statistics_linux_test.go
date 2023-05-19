@@ -16,7 +16,7 @@ func TestParseNetstatOut(t *testing.T) {
 		"Proto Recv-Q Send-Q Local Address           Foreign Address         State       User       Inode      PID/Program name\n" + //nolint:lll
 		"tcp       0      0 0.0.0.0:22              0.0.0.0:*               LISTEN      1000       15535      -\n" +
 		"tcp       0      0 0.0.0.0:22              0.0.0.0:*               LISTEN      1000       15535      1111/sshd\n" +
-		"tcp6      0      0 :::80                   :::*                    LISTEN      1000       15535      2222/apache2\n" +
+		"tcp6      0      0 :::80                   :::*                    LISTEN      1000       15535      2222/apache2\n" + //nolint:lll
 		"tcp       0      0 0.0.0.0:22              0.0.0.0:*                           1000       15535      1111/sshd\n"
 
 	expected := []storage.NetworkStatsItem{
