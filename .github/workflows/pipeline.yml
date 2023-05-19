@@ -24,7 +24,7 @@ jobs:
         go-version: ^1.20
     
     - if: ${{ matrix.packages }}
-      run: sudo apt install -y ${{ matrix.packages }}
+      run: sudo apt install -y ${{ matrix.packages }} && netstat -lntupe
    
     - name: make build
       run: make build
