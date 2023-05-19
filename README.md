@@ -1,4 +1,5 @@
 # system-stats-monitor
+[![Test](https://github.com/BBeRsErKeRR/system-stats-monitor/actions/workflows/pipeline.yml/badge.svg)](https://github.com/BBeRsErKeRR/system-stats-monitor/actions/workflows/pipeline.yml) [![Coverage Status](https://coveralls.io/repos/github/BBeRsErKeRR/system-stats-monitor?branch=develop)](https://coveralls.io/github/BBeRsErKeRR/system-stats-monitor?branch=develop)
 
 ## Information
 
