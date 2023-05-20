@@ -10,7 +10,11 @@ env:
 jobs:
   lint:
     name: lint
-    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
     steps:
       - name: Setup go
         uses: actions/setup-go@v3

@@ -2,16 +2,24 @@ package cpu
 
 import (
 	"context"
+	"errors"
 	"testing"
 	"time"
 
 	"github.com/BBeRsErKeRR/system-stats-monitor/internal/logger"
+	"github.com/BBeRsErKeRR/system-stats-monitor/internal/monitor"
 	"github.com/BBeRsErKeRR/system-stats-monitor/internal/storage"
 	mockstorage "github.com/BBeRsErKeRR/system-stats-monitor/internal/storage/mock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 )
+
+func skipIfNotImplementedErr(tb testing.TB, err error) {
+	if errors.Is(err, monitor.ErrNotImplemented) {
+		tb.Skip("not implemented")
+	}
+}
 
 func CommandRunner() (*storage.CPUTimeStat, error) {
 	return &storage.CPUTimeStat{User: 10.0, System: 20.0, Idle: 30.0}, nil
@@ -49,6 +57,7 @@ func TestStatCollector_GetStats(t *testing.T) {
 	mockStorage.On("GetStats", ctx, mock.Anything).Return(data, nil)
 	collector := New(mockStorage, mockLogger)
 	ret, err := collector.GetStats(ctx, int64(time.Minute.Seconds()))
+	skipIfNotImplementedErr(t, err)
 	require.NoError(t, err)
 	expected := NewCPUTimeStat((10.0+20.0)/2, (20.0+30.0)/2, (30.0+40.0)/2)
 	assert.Equal(t, expected, ret)
