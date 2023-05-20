@@ -9,7 +9,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/BBeRsErKeRR/system-stats-monitor/internal/monitor"
 	"github.com/BBeRsErKeRR/system-stats-monitor/internal/storage"
 	command "github.com/BBeRsErKeRR/system-stats-monitor/pkg/command"
 )
