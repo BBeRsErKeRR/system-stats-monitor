@@ -31,7 +31,7 @@ var commandRunner = getCPUTimes
 
 func (c *StatCollector) Grab(ctx context.Context) error {
 	c.logger.Info("start collect data")
-	times, err := commandRunner()
+	times, err := commandRunner(ctx)
 	if err != nil {
 		return err
 	}

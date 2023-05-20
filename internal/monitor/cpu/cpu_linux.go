@@ -4,6 +4,7 @@
 package cpu
 
 import (
+	"context"
 	"errors"
 	"strconv"
 	"strings"
@@ -61,7 +62,7 @@ func parseStatLine(line string) (*storage.CPUTimeStat, error) {
 	return &ct, nil
 }
 
-func getCPUTimes() (*storage.CPUTimeStat, error) {
+func getCPUTimes(ctx context.Context) (*storage.CPUTimeStat, error) {
 	lines, err := files.ReadLinesOffsetN("/proc/stat", 0, 1)
 	if err != nil {
 		return nil, err

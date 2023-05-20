@@ -4,6 +4,11 @@
 package cpu
 
 import (
+	"context"
+	"errors"
+	"strconv"
+	"strings"
+
 	"github.com/BBeRsErKeRR/system-stats-monitor/internal/monitor"
 	"github.com/BBeRsErKeRR/system-stats-monitor/internal/storage"
 )
@@ -17,7 +22,7 @@ func parseData(output string) (*storage.CPUTimeStat, error) {
 		return ErrInvalidData
 	}
 
-	fields = strings.Split(lines[2], ",")
+	fields := strings.Split(lines[2], ",")
 
 	user, err := strconv.ParseFloat(strings.Trim(fields[2], "\""), 64)
 	if err != nil {
@@ -41,7 +46,7 @@ func parseData(output string) (*storage.CPUTimeStat, error) {
 	return &ct, nil
 }
 
-func getCPUTimes() (*storage.CPUTimeStat, error) {
+func getCPUTimes(ctx context.Context) (*storage.CPUTimeStat, error) {
 	out, err := command.WithContext(ctx, "typeperf",
 		`Processor Information(_Total)\% Privileged Time`,
 		`Processor Information(_Total)\% User Time`,

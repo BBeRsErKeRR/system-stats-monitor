@@ -4,10 +4,12 @@
 package cpu
 
 import (
+	"context"
+
 	"github.com/BBeRsErKeRR/system-stats-monitor/internal/monitor"
 	"github.com/BBeRsErKeRR/system-stats-monitor/internal/storage"
 )
 
-func getCPUTimes() (*storage.CPUTimeStat, error) {
+func getCPUTimes(ctx context.Context) (*storage.CPUTimeStat, error) {
 	return nil, monitor.ErrNotImplemented
 }

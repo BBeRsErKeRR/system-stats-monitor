@@ -4,6 +4,7 @@
 package cpu
 
 import (
+	"context"
 	"testing"
 
 	"github.com/BBeRsErKeRR/system-stats-monitor/internal/storage"
@@ -56,7 +57,7 @@ func TestParseStatLine(t *testing.T) {
 }
 
 func TestGetCPUTimes(t *testing.T) {
-	stats, err := getCPUTimes()
+	stats, err := getCPUTimes(context.Background())
 	assert.NotNil(t, stats)
 	assert.NoError(t, err)
 }
