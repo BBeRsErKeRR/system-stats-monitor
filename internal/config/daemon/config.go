@@ -1,4 +1,4 @@
-package main
+package daemonconfig
 
 import (
 	"github.com/BBeRsErKeRR/system-stats-monitor/internal/app"

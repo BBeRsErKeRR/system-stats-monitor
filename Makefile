@@ -45,8 +45,10 @@ run-test: build-test ## Run client app
 test: ## Execute tests
 	go test  -covermode=atomic -coverprofile=coverage.out -race -count 100 ./internal/... ./api/... ./pkg/...
 
-coverage: ## Test coverage
-	go test -coverprofile=coverage.out ./internal/... ./api/... ./pkg/...
+integration: ## Execute tests go test -v -race -count=10 ./tests/...
+	ginkgo -p -v ./tests --
+
+coverage: test ## Test coverage
 	go tool cover -html coverage.out
 
 install-lint-deps:

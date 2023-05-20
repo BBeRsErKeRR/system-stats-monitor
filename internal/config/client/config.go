@@ -1,4 +1,4 @@
-package main
+package clientconfig
 
 import (
 	grpcclient "github.com/BBeRsErKeRR/system-stats-monitor/internal/client/grpc"

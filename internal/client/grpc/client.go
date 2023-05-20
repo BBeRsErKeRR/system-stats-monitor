@@ -33,6 +33,7 @@ type Client struct {
 	responseDuration time.Duration
 	waitDuration     time.Duration
 	isTermUIEnable   bool
+	ui               *cliui.UI
 }
 
 func NewClient(logger logger.Logger, conf *Config) *Client {
@@ -51,9 +52,18 @@ func NewClient(logger logger.Logger, conf *Config) *Client {
 
 func (c *Client) Connect(ctx context.Context) error {
 	var err error
+	c.logger.Info("Connect to: " + c.Addr)
 	c.conn, err = grpc.DialContext(ctx, c.Addr,
 		grpc.WithTransportCredentials(insecure.NewCredentials()))
 	return err
+}
+
+func (c *Client) Process(stat *stats.Stats) {
+	if c.isTermUIEnable {
+		c.ui.UpdateStats(stat)
+	} else {
+		c.printStats(stat)
+	}
 }
 
 func (c *Client) StartMonitoring(ctx context.Context, cancelFunc context.CancelFunc) error {
@@ -69,16 +79,15 @@ func (c *Client) StartMonitoring(ctx context.Context, cancelFunc context.CancelF
 	}
 	stats := &stats.Stats{}
 
-	var ui *cliui.UI
 	if c.isTermUIEnable {
-		ui, err = cliui.NewUI(stats, c.logger)
+		c.ui, err = cliui.NewUI(stats, c.logger)
 		if err != nil {
 			return err
 		}
 
 		go func() {
 			defer cancelFunc()
-			if err := ui.Run(ctx, responseTicker); err != nil {
+			if err := c.ui.Run(ctx, responseTicker); err != nil {
 				c.logger.Error("failed to start ui: " + err.Error())
 			}
 		}()
@@ -94,11 +103,7 @@ func (c *Client) StartMonitoring(ctx context.Context, cancelFunc context.CancelF
 			return errRecv
 		}
 		stat := v1grpc.ResolveResponse(payload)
-		if c.isTermUIEnable {
-			ui.UpdateStats(stat)
-		} else {
-			c.printStats(stat)
-		}
+		c.Process(stat)
 	}
 	return nil
 }
