@@ -57,5 +57,5 @@ func getCPUTimes(ctx context.Context) (*storage.CPUTimeStat, error) {
 	if err != nil {
 		return nil, err
 	}
-	return nil, monitor.ErrNotImplemented
+	return parseData(out)
 }
