@@ -15,9 +15,10 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func skipIfNotImplementedErr(tb testing.TB, err error) {
+func skipIfNotImplementedErr(t *testing.T, err error) {
+	t.Helper()
 	if errors.Is(err, monitor.ErrNotImplemented) {
-		tb.Skip("not implemented")
+		t.Skip("not implemented")
 	}
 }
 

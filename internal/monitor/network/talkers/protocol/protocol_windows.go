@@ -11,5 +11,8 @@ import (
 )
 
 func getTalkers(ctx context.Context) (<-chan storage.ProtocolTalkerItem, <-chan error) {
-	return nil, monitor.ErrNotImplemented
+	errC := make(chan error)
+	defer close(errC)
+	errC <- monitor.ErrNotImplemented
+	return nil, errC
 }
