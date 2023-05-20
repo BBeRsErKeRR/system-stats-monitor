@@ -15,15 +15,14 @@ import (
 	grpcclient "github.com/BBeRsErKeRR/system-stats-monitor/internal/client/grpc"
 	"github.com/BBeRsErKeRR/system-stats-monitor/internal/cmd/daemon"
 	"github.com/BBeRsErKeRR/system-stats-monitor/internal/stats"
+	. "github.com/onsi/ginkgo/v2"
+	. "github.com/onsi/gomega"
 	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/status"
-
-	. "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
 )
 
 type MockClient struct {
@@ -96,7 +95,6 @@ var _ = Describe("Daemon", Ordered, func() {
 			stat := v1grpc.ResolveResponse(payload)
 			resChan <- *stat
 		}()
-
 	})
 
 	AfterAll(func() {
