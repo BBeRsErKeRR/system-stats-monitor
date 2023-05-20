@@ -55,9 +55,9 @@ func parseStatLine(line string) (*storage.CPUTimeStat, error) {
 	}
 
 	ct := NewCPUTimeStat(
-		user,
-		system,
-		idle,
+		user/ClocksPerSec,
+		system/ClocksPerSec,
+		idle/ClocksPerSec,
 	)
 	return &ct, nil
 }

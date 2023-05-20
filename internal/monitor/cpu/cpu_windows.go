@@ -39,9 +39,9 @@ func parseData(output string) (*storage.CPUTimeStat, error) {
 		return nil, err
 	}
 	ct := NewCPUTimeStat(
-		user/ClocksPerSec,
-		system/ClocksPerSec,
-		idle/ClocksPerSec,
+		user,
+		system,
+		idle,
 	)
 	return &ct, nil
 }
@@ -57,5 +57,5 @@ func getCPUTimes(ctx context.Context) (*storage.CPUTimeStat, error) {
 	if err != nil {
 		return nil, err
 	}
-	return parseData(out)
+	return parseData(string(out))
 }
