@@ -11,6 +11,7 @@ import (
 
 	"github.com/BBeRsErKeRR/system-stats-monitor/internal/monitor"
 	"github.com/BBeRsErKeRR/system-stats-monitor/internal/storage"
+	command "github.com/BBeRsErKeRR/system-stats-monitor/pkg/command"
 )
 
 var ErrInvalidData = errors.New("incorrect output")
@@ -19,7 +20,7 @@ func parseData(output string) (*storage.CPUTimeStat, error) {
 	var err error
 	lines := strings.Split(output, "\r\n")
 	if len(lines) < 3 {
-		return ErrInvalidData
+		return nil, ErrInvalidData
 	}
 
 	fields := strings.Split(lines[2], ",")
