@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/BBeRsErKeRR/system-stats-monitor/internal/logger"
@@ -12,6 +13,12 @@ import (
 	"github.com/gizak/termui/v3/widgets"
 	"github.com/pkg/errors"
 	"golang.org/x/term"
+)
+
+const (
+	defaultProgressChar      = '■'
+	defaultEmptyProgressChar = '□'
+	barLength                = 20
 )
 
 type UI struct {
@@ -102,15 +109,31 @@ func (u *UI) updateWidgets() {
 	}
 
 	u.diskUsageInfoWidget.Rows = make([]string, 0, len(u.stats.DiskUsageInfo.Items))
+	var maxInfo, maxUsed int
+	lengthItems := map[int][]int{}
+
 	for idx, item := range u.stats.DiskUsageInfo.Items {
-		data := fmt.Sprintf("[%v] %s -> %s : used(%vM %v%%) inode(%vM %v%%)",
+		info := len(fmt.Sprintf("%v%s%s", idx, item.Path, item.Fstype))
+		used := len(fmt.Sprintf("%v%v", item.Used, ConvertFloat(item.AvailablePercent)))
+		lengthItems[idx] = []int{info, used}
+		if maxInfo < info {
+			maxInfo = info
+		}
+		if maxUsed < used {
+			maxUsed = used
+		}
+	}
+	for idx, item := range u.stats.DiskUsageInfo.Items {
+		data := fmt.Sprintf("[%v] %s -> %s %s| [used: %vM %s](fg:yellow) %s| [inode: %vM %s](fg:cyan)",
 			idx,
 			item.Path,
 			item.Fstype,
+			strings.Repeat(" ", maxInfo-lengthItems[idx][0]),
 			item.Used,
-			ConvertFloat(item.AvailablePercent),
+			formatPercent(100.00, item.AvailablePercent),
+			strings.Repeat(" ", maxUsed-lengthItems[idx][1]),
 			item.InodesUsed,
-			ConvertFloat(item.InodesAvailablePercent),
+			formatPercent(100.00, item.InodesAvailablePercent),
 		)
 		u.diskUsageInfoWidget.Rows = append(u.diskUsageInfoWidget.Rows, data)
 	}
@@ -239,4 +262,28 @@ func scrollList(list *widgets.List) {
 
 func ConvertFloat(item float64) string {
 	return strconv.FormatFloat(item, 'f', 2, 64)
+}
+
+func formatPercent(total, current float64) string {
+	pc := defaultProgressChar
+	epc := defaultEmptyProgressChar
+
+	var percentBox, barBox string
+
+	var percent float64
+	if total > 0 {
+		percent = current / (total / float64(100))
+	} else {
+		percent = current / float64(100)
+	}
+	percentBox = fmt.Sprintf("  (%s%%)", ConvertFloat(percent))
+
+	progressLength := int(barLength * percent / 100)
+	emptyProgressLength := barLength - progressLength
+	barBox = strings.Repeat(string(pc), progressLength)
+	if emptyProgressLength > 0 {
+		barBox += strings.Repeat(string(epc), emptyProgressLength)
+	}
+
+	return barBox + percentBox
 }
