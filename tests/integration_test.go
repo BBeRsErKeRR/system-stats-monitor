@@ -2,11 +2,8 @@ package integrationtest
 
 import (
 	"context"
-	"errors"
 	"fmt"
-	"io"
 	"os/signal"
-	"strings"
 	"syscall"
 	"testing"
 	"time"
@@ -20,9 +17,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials/insecure"
-	"google.golang.org/grpc/status"
 )
 
 type MockClient struct {
@@ -41,76 +36,50 @@ func TestIntegrationTests(t *testing.T) {
 }
 
 var _ = Describe("Daemon", Ordered, func() {
-	var resChan chan stats.Stats
-	var ctxClient context.Context
-	var clientCancel context.CancelFunc
-
 	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
-	defer cancel()
-
-	go func() {
-		defer GinkgoRecover()
-		daemon.RootCmd.PersistentFlags().StringVar(
-			&daemon.CfgFile,
-			"config",
-			"./testdata/config.toml",
-			"Configuration file path",
-		)
-		daemon.RootCmd.FParseErrWhitelist = cobra.FParseErrWhitelist{UnknownFlags: true}
-		err := daemon.RootCmd.ExecuteContext(ctx)
-		require.NoError(GinkgoT(), err)
-	}()
-
-	time.Sleep(2 * time.Second)
-
 	BeforeAll(func() {
-		ctxClient, clientCancel = signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
-		resChan = make(chan stats.Stats)
-
-		conn, err := grpc.DialContext(ctxClient, "0.0.0.0:9081",
-			grpc.WithTransportCredentials(insecure.NewCredentials()))
-		require.NoError(GinkgoT(), err)
-
-		client := v1grpc.NewSystemStatsMonitorServiceV1Client(conn)
-
-		req := &v1grpc.StartMonitoringRequest{
-			ResponseDuration: 4,
-			WaitDuration:     3,
-		}
-		stream, err := client.StartMonitoring(ctxClient, req)
-		if err != nil {
-			if !(status.Code(err) == codes.Unavailable && strings.Contains(err.Error(), "error reading server preface")) {
-				require.NoError(GinkgoT(), err)
-			}
-		}
-
 		go func() {
 			defer GinkgoRecover()
-			defer close(resChan)
-			defer conn.Close()
-			payload, errRecv := stream.Recv()
-			if !errors.Is(errRecv, io.EOF) {
-				require.NoError(GinkgoT(), errRecv)
-			}
-			stat := v1grpc.ResolveResponse(payload)
-			resChan <- *stat
+			daemon.RootCmd.PersistentFlags().StringVar(
+				&daemon.CfgFile,
+				"config",
+				"./testdata/config.toml",
+				"Configuration file path",
+			)
+			daemon.RootCmd.FParseErrWhitelist = cobra.FParseErrWhitelist{UnknownFlags: true}
+			err := daemon.RootCmd.ExecuteContext(ctx)
+			require.NoError(GinkgoT(), err)
 		}()
+
+		time.Sleep(2 * time.Second)
 	})
 
 	AfterAll(func() {
-		clientCancel()
+		cancel()
 	})
 
 	Describe("Collect stats", Ordered, func() {
 		var statsResponse stats.Stats
 		BeforeAll(func() {
-			waitTicker := time.NewTicker(7 * time.Second)
-			select {
-			case out := <-resChan:
-				statsResponse = out
-			case <-waitTicker.C:
-				GinkgoT().Error("time out")
+			clientCtx := context.Background()
+			conn, err := grpc.DialContext(clientCtx, "0.0.0.0:9081",
+				grpc.WithTransportCredentials(insecure.NewCredentials()))
+			require.NoError(GinkgoT(), err)
+			defer conn.Close()
+
+			client := v1grpc.NewSystemStatsMonitorServiceV1Client(conn)
+
+			req := &v1grpc.StartMonitoringRequest{
+				ResponseDuration: 4,
+				WaitDuration:     3,
 			}
+			stream, err := client.StartMonitoring(clientCtx, req)
+			require.NoError(GinkgoT(), err)
+
+			payload, errRecv := stream.Recv()
+			require.NoError(GinkgoT(), errRecv)
+			stat := v1grpc.ResolveResponse(payload)
+			statsResponse = *stat
 		})
 
 		It("CPUInfo", func() {

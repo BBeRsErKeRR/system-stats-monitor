@@ -27,4 +27,4 @@ jobs:
         with:
           version: v1.51.1
           working-directory: ${{ env.BRANCH }}
-          args: --timeout 3m0s #--skip-dirs='/opt/hostedtoolcache/go|/go/pkg/mod'
+          args: --timeout 3m0s --verbose #--skip-dirs='/opt/hostedtoolcache/go|/go/pkg/mod'

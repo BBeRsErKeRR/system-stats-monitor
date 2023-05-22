@@ -46,7 +46,7 @@ test: ## Execute tests
 	go test  -covermode=atomic -coverprofile=coverage.out -race -count 100 ./internal/... ./api/... ./pkg/...
 
 integration: ## Execute tests go test -v -race -count=10 ./tests/...
-	ginkgo -p -v ./tests --
+	ginkgo -p -v --repeat=10 ./tests --
 
 coverage: test ## Test coverage
 	go tool cover -html coverage.out
