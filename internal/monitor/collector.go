@@ -9,10 +9,10 @@ var ErrNotImplemented = errors.New("collector not implemented")
 
 type Collector interface {
 	Grab(context.Context) (interface{}, error)
-	CheckCall(context.Context) error
+	CheckExecution(context.Context) error
 }
 
 type ConstantCollector interface {
-	GrabSub(context.Context) (<-chan interface{}, <-chan error)
-	CheckCall(context.Context) error
+	GrabStream(context.Context) (<-chan interface{}, <-chan error)
+	CheckExecution(context.Context) error
 }

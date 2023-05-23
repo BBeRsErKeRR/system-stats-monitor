@@ -26,6 +26,6 @@ func (c *StatCollector) Grab(ctx context.Context) (interface{}, error) {
 	return la, nil
 }
 
-func (s *StatCollector) CheckCall(ctx context.Context) error {
+func (c *StatCollector) CheckExecution(ctx context.Context) error {
 	return checkCall(ctx)
 }

@@ -38,7 +38,6 @@ func TestStatCollector_Grab(t *testing.T) {
 	default:
 		t.Error("bad returned type")
 	}
-
 }
 
 func TestStatCollector_Check(t *testing.T) {
@@ -46,7 +45,7 @@ func TestStatCollector_Check(t *testing.T) {
 	mockLogger, err := logger.New(&logger.Config{})
 	require.NoError(t, err)
 	collector := New(mockLogger)
-	err = collector.CheckCall(ctx)
+	err = collector.CheckExecution(ctx)
 	skipIfNotImplementedErr(t, err)
 	require.NoError(t, err)
 }

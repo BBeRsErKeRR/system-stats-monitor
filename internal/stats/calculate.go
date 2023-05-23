@@ -7,7 +7,7 @@ import (
 	"github.com/BBeRsErKeRR/system-stats-monitor/internal/storage"
 )
 
-func getAvgCPU(cpuTimesMetric []storage.Metric) (storage.CPUTimeStat, error) {
+func getAvgCPU(cpuTimesMetric []storage.Metric) storage.CPUTimeStat {
 	var sumUser, sumSystem, sumIdle float64
 	for _, metric := range cpuTimesMetric {
 		stat := metric.StatInfo.(storage.CPUTimeStat)
@@ -20,10 +20,10 @@ func getAvgCPU(cpuTimesMetric []storage.Metric) (storage.CPUTimeStat, error) {
 		User:   sumUser / totalLen,
 		System: sumSystem / totalLen,
 		Idle:   sumIdle / totalLen,
-	}, nil
+	}
 }
 
-func getAvgDiskIo(statsItems []storage.Metric) ([]storage.DiskIoStatItem, error) {
+func getAvgDiskIo(statsItems []storage.Metric) []storage.DiskIoStatItem {
 	buff := make(map[string]*storage.DiskIoStatItem)
 	buffLen := make(map[string]float64)
 	for _, metric := range statsItems {
@@ -46,10 +46,10 @@ func getAvgDiskIo(statsItems []storage.Metric) ([]storage.DiskIoStatItem, error)
 		val.KbWriteS /= buffLen[key]
 		ioStats = append(ioStats, *val)
 	}
-	return ioStats, nil
+	return ioStats
 }
 
-func getAvgLoad(lastLoadStats []storage.Metric) (storage.LoadStat, error) {
+func getAvgLoad(lastLoadStats []storage.Metric) storage.LoadStat {
 	var sumLoad1, sumLoad5, sumLoad15 float64
 	for _, metric := range lastLoadStats {
 		stat := metric.StatInfo.(storage.LoadStat)
@@ -62,7 +62,7 @@ func getAvgLoad(lastLoadStats []storage.Metric) (storage.LoadStat, error) {
 		Load1:  sumLoad1 / float64(totalLen),
 		Load5:  sumLoad5 / float64(totalLen),
 		Load15: sumLoad15 / float64(totalLen),
-	}, nil
+	}
 }
 
 func getUniqueDu(intSlice []storage.Metric) []storage.UsageStatItem {
@@ -83,7 +83,7 @@ func getUniqueDu(intSlice []storage.Metric) []storage.UsageStatItem {
 	return list
 }
 
-func getAvgNetworkStates(nsStats []storage.Metric) (storage.NetworkStatesStat, error) {
+func getAvgNetworkStates(nsStats []storage.Metric) storage.NetworkStatesStat {
 	avgNs := make(map[string]int32)
 
 	for _, fact := range nsStats {
@@ -103,7 +103,7 @@ func getAvgNetworkStates(nsStats []storage.Metric) (storage.NetworkStatesStat, e
 	}
 	return storage.NetworkStatesStat{
 		Counters: avgNs,
-	}, nil
+	}
 }
 
 func getUniqueNetworkStatistics(intSlice []storage.Metric) []storage.NetworkStatsItem {

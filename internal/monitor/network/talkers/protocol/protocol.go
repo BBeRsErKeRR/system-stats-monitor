@@ -16,11 +16,11 @@ func New(logger logger.Logger) *StatCollector {
 	}
 }
 
-func (c *StatCollector) GrabSub(ctx context.Context) (<-chan interface{}, <-chan error) {
+func (c *StatCollector) GrabStream(ctx context.Context) (<-chan interface{}, <-chan error) {
 	c.logger.Info("start collect data")
 	return getTalkers(ctx)
 }
 
-func (s *StatCollector) CheckCall(ctx context.Context) error {
+func (c *StatCollector) CheckExecution(ctx context.Context) error {
 	return checkCall(ctx)
 }

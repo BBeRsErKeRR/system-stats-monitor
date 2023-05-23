@@ -26,7 +26,7 @@ func TestGrab(t *testing.T) {
 			name: "success",
 			commandRunner: func(ctx context.Context) ([]storage.DiskIoStatItem, error) {
 				res := []storage.DiskIoStatItem{
-					storage.DiskIoStatItem{},
+					{},
 				}
 				return res, nil
 			},

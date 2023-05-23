@@ -63,7 +63,7 @@ func New(ctx context.Context, cfg *Config, st storage.Storage, logger logger.Log
 
 	if cfg.IsCPUEnable {
 		cpuC := cpu.New(logger)
-		if err := cpuC.CheckCall(ctx); err != nil {
+		if err := cpuC.CheckExecution(ctx); err != nil {
 			return UseCase{}, err
 		}
 		collectors["cpu"] = cpuC
@@ -71,7 +71,7 @@ func New(ctx context.Context, cfg *Config, st storage.Storage, logger logger.Log
 
 	if cfg.IsLoadEnable {
 		loadC := load.New(logger)
-		if err := loadC.CheckCall(ctx); err != nil {
+		if err := loadC.CheckExecution(ctx); err != nil {
 			return UseCase{}, err
 		}
 		collectors["load"] = loadC
@@ -79,13 +79,13 @@ func New(ctx context.Context, cfg *Config, st storage.Storage, logger logger.Log
 
 	if cfg.IsNetworkEnable {
 		nstC := networkstates.New(logger)
-		if err := nstC.CheckCall(ctx); err != nil {
+		if err := nstC.CheckExecution(ctx); err != nil {
 			return UseCase{}, err
 		}
 		collectors["network_states"] = nstC
 
 		nsC := networkstatistics.New(logger)
-		if err := nsC.CheckCall(ctx); err != nil {
+		if err := nsC.CheckExecution(ctx); err != nil {
 			return UseCase{}, err
 		}
 		collectors["network_statistics"] = nsC
@@ -93,13 +93,13 @@ func New(ctx context.Context, cfg *Config, st storage.Storage, logger logger.Log
 
 	if cfg.IsDiskEnable {
 		duC := diskusage.New(logger)
-		if err := duC.CheckCall(ctx); err != nil {
+		if err := duC.CheckExecution(ctx); err != nil {
 			return UseCase{}, err
 		}
 		collectors["du"] = duC
 
 		dioC := diskio.New(logger)
-		if err := dioC.CheckCall(ctx); err != nil {
+		if err := dioC.CheckExecution(ctx); err != nil {
 			return UseCase{}, err
 		}
 		collectors["di"] = dioC
@@ -107,12 +107,12 @@ func New(ctx context.Context, cfg *Config, st storage.Storage, logger logger.Log
 
 	if cfg.IsNetworkTalkersEnable {
 		protocolC := protocoltalkers.New(logger)
-		if err := protocolC.CheckCall(ctx); err != nil {
+		if err := protocolC.CheckExecution(ctx); err != nil {
 			return UseCase{}, err
 		}
 		constantCollectors["protocol_talkers"] = protocolC
 		bspC := bpstalkers.New(logger)
-		if err := bspC.CheckCall(ctx); err != nil {
+		if err := bspC.CheckExecution(ctx); err != nil {
 			return UseCase{}, err
 		}
 		constantCollectors["bsp_talkers"] = bspC
@@ -199,7 +199,7 @@ func (s *UseCase) collectConstant(ctx context.Context) {
 		name := n
 		go func(collector monitor.ConstantCollector) {
 			defer wg.Done()
-			stats, errC := collector.GrabSub(ctx)
+			stats, errC := collector.GrabStream(ctx)
 			for {
 				select {
 				case stat, ok := <-stats:
@@ -242,10 +242,7 @@ func (s *UseCase) GetStats(ctx context.Context, duration int64) (Stats, error) {
 		if err != nil {
 			return stats, err
 		}
-		stats.CPUInfo, err = getAvgCPU(lastCPUTimes)
-		if err != nil {
-			return stats, err
-		}
+		stats.CPUInfo = getAvgCPU(lastCPUTimes)
 	}
 
 	if s.isLoadEnable {
@@ -253,11 +250,7 @@ func (s *UseCase) GetStats(ctx context.Context, duration int64) (Stats, error) {
 		if err != nil {
 			return stats, err
 		}
-
-		stats.LoadInfo, err = getAvgLoad(lastLoadInfo)
-		if err != nil {
-			return stats, err
-		}
+		stats.LoadInfo = getAvgLoad(lastLoadInfo)
 	}
 
 	if s.isDiskEnable {
@@ -265,10 +258,7 @@ func (s *UseCase) GetStats(ctx context.Context, duration int64) (Stats, error) {
 		if err != nil {
 			return stats, err
 		}
-		stats.DiskIoInfo, err = getAvgDiskIo(lastDiskIo)
-		if err != nil {
-			return stats, err
-		}
+		stats.DiskIoInfo = getAvgDiskIo(lastDiskIo)
 
 		lastDu, err := s.st.GetUsageStats(ctx, duration)
 		if err != nil {
@@ -282,17 +272,13 @@ func (s *UseCase) GetStats(ctx context.Context, duration int64) (Stats, error) {
 		if err != nil {
 			return stats, err
 		}
-		stats.NetworkStateInfo, err = getAvgNetworkStates(nsStats)
-		if err != nil {
-			return stats, err
-		}
+		stats.NetworkStateInfo = getAvgNetworkStates(nsStats)
 
 		nstStats, err := s.st.GetNetworkStats(ctx, duration)
 		if err != nil {
 			return stats, err
 		}
 		stats.NetworkStatisticsInfo = getUniqueNetworkStatistics(nstStats)
-
 	}
 
 	if s.isNetworkTalkersEnable {
@@ -307,7 +293,6 @@ func (s *UseCase) GetStats(ctx context.Context, duration int64) (Stats, error) {
 			return stats, err
 		}
 		stats.ProtocolTalkersInfo = getUniqueProtocolTalkers(protocolStats)
-
 	}
 	return stats, nil
 }
