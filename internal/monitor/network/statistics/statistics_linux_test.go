@@ -58,7 +58,7 @@ func TestGetNS(t *testing.T) {
 
 	// Make sure all items have valid PID and port numbers
 	for _, item := range items {
-		require.Greater(t, item.(storage.NetworkStatsItem).PID, int32(0))
-		require.Greater(t, item.(storage.NetworkStatsItem).Port, int32(0))
+		require.Greater(t, item.PID, int32(0))
+		require.Greater(t, item.Port, int32(0))
 	}
 }

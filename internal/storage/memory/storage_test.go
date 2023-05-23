@@ -21,10 +21,12 @@ func TestStorage_All(t *testing.T) {
 	require.NoError(t, err)
 	err = st.StoreNetworkStatesStat(ctx, storage.NetworkStatesStat{})
 	require.NoError(t, err)
-	err = st.StoreUsageStat(ctx, storage.UsageStatItem{Path: "/tmp", Used: 1024})
+	err = st.StoreUsageStats(ctx, []storage.UsageStatItem{
+		{Path: "/tmp", Used: 1024},
+	})
 	require.NoError(t, err)
-	err = st.StorDiskIoStats(ctx, []interface{}{
-		storage.DiskIoStatItem{Device: "sda", KbReadS: 1024},
+	err = st.StorDiskIoStats(ctx, []storage.DiskIoStatItem{
+		{Device: "sda", KbReadS: 1024},
 	})
 	require.NoError(t, err)
 	err = st.StoreProtocolTalkersStat(ctx, storage.ProtocolTalkerItem{Protocol: "tcp", SendBytes: 100})

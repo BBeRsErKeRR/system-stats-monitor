@@ -42,9 +42,9 @@ func parseTCPDumpOut(line string) (interface{}, error) {
 	return item, nil
 }
 
-func getTalkers(ctx context.Context) (<-chan storage.ProtocolTalkerItem, <-chan error) {
-	parser := func(In <-chan string, errC <-chan error) (<-chan storage.ProtocolTalkerItem, <-chan error) {
-		res := make(chan storage.ProtocolTalkerItem)
+func getTalkers(ctx context.Context) (<-chan interface{}, <-chan error) {
+	parser := func(In <-chan string, errC <-chan error) (<-chan interface{}, <-chan error) {
+		res := make(chan interface{})
 		resErr := make(chan error)
 		go func() {
 			defer close(res)

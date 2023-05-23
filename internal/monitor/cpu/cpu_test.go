@@ -4,14 +4,10 @@ import (
 	"context"
 	"errors"
 	"testing"
-	"time"
 
 	"github.com/BBeRsErKeRR/system-stats-monitor/internal/logger"
 	"github.com/BBeRsErKeRR/system-stats-monitor/internal/monitor"
 	"github.com/BBeRsErKeRR/system-stats-monitor/internal/storage"
-	mockstorage "github.com/BBeRsErKeRR/system-stats-monitor/internal/storage/mock"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 )
 
@@ -28,39 +24,29 @@ func CommandRunner(ctx context.Context) (*storage.CPUTimeStat, error) {
 
 func TestStatCollector_Grab(t *testing.T) {
 	ctx := context.Background()
-	mockStorage := mockstorage.New()
 	mockLogger, err := logger.New(&logger.Config{})
 	require.NoError(t, err)
-	mockStorage.On("StoreStats", mock.Anything, mock.Anything).Return(nil, nil).Once()
-	collector := New(mockStorage, mockLogger)
+	collector := New(mockLogger)
 	commandRunner = CommandRunner
-	err = collector.Grab(ctx)
+	data, err := collector.Grab(ctx)
 	require.NoError(t, err)
-	mockStorage.AssertExpectations(t)
+	switch v := data.(type) {
+	case *storage.CPUTimeStat:
+		require.Equal(t, v.User, 10.0)
+		require.Equal(t, v.System, 20.0)
+		require.Equal(t, v.Idle, 30.0)
+	default:
+		t.Error("bad returned type")
+	}
+
 }
 
-func TestStatCollector_GetStats(t *testing.T) {
+func TestStatCollector_Check(t *testing.T) {
 	ctx := context.Background()
-	mockStorage := mockstorage.New()
 	mockLogger, err := logger.New(&logger.Config{})
 	require.NoError(t, err)
-	now := time.Now()
-	data := []storage.Metric{
-		{
-			Date:     now.Add(-time.Second),
-			StatInfo: storage.CPUTimeStat{User: 10.0, System: 20.0, Idle: 30.0},
-		},
-		{
-			Date:     now,
-			StatInfo: storage.CPUTimeStat{User: 20.0, System: 30.0, Idle: 40.0},
-		},
-	}
-	mockStorage.On("GetStats", ctx, mock.Anything).Return(data, nil)
-	collector := New(mockStorage, mockLogger)
-	ret, err := collector.GetStats(ctx, int64(time.Minute.Seconds()))
+	collector := New(mockLogger)
+	err = collector.CheckCall(ctx)
 	skipIfNotImplementedErr(t, err)
 	require.NoError(t, err)
-	expected := NewCPUTimeStat((10.0+20.0)/2, (20.0+30.0)/2, (30.0+40.0)/2)
-	assert.Equal(t, expected, ret)
-	mockStorage.AssertExpectations(t)
 }

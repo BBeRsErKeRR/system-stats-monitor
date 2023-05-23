@@ -127,12 +127,12 @@ func (c *Client) printStats(data *stats.Stats) {
 		fmt.Printf("    %s: %v\n", key, value)
 	}
 	fmt.Println("  Listen items:")
-	for _, item := range data.NetworkStatisticsInfo.Items {
+	for _, item := range data.NetworkStatisticsInfo {
 		fmt.Printf("    %s: '%v %v %v %v'\n", item.Command, item.PID, item.User, item.Protocol, item.Port)
 	}
 	fmt.Println("\nDisk:")
 	fmt.Println("  Usage:")
-	for _, item := range data.DiskUsageInfo.Items {
+	for _, item := range data.DiskUsageInfo {
 		fmt.Printf("    - '%s -> %s : used(%vM %v%%) inode(%vM %v%%)'\n",
 			item.Path,
 			item.Fstype,
@@ -143,7 +143,7 @@ func (c *Client) printStats(data *stats.Stats) {
 		)
 	}
 	fmt.Println("  IO:")
-	for _, item := range data.DiskIoInfo.Items {
+	for _, item := range data.DiskIoInfo {
 		fmt.Printf("    - '%s -> tps(%v) kB_read/s(%v) kB_wrtn/s(%v)'\n",
 			item.Device,
 			cliui.ConvertFloat(item.Tps),
@@ -153,7 +153,7 @@ func (c *Client) printStats(data *stats.Stats) {
 	}
 	fmt.Println("\nTalkers:")
 	fmt.Println("  Protocol:")
-	for _, item := range data.ProtocolTalkersInfo.Items {
+	for _, item := range data.ProtocolTalkersInfo {
 		fmt.Printf("    %s: '%v  %v%%'\n",
 			item.Protocol,
 			cliui.ConvertFloat(item.SendBytes),
@@ -161,7 +161,7 @@ func (c *Client) printStats(data *stats.Stats) {
 		)
 	}
 	fmt.Println("  Protocol:")
-	for _, item := range data.BpsTalkersInfo.Items {
+	for _, item := range data.BpsTalkersInfo {
 		fmt.Printf("    - '(%s) %s -> %s: %v  %v b/s'\n",
 			item.Protocol,
 			item.Source,

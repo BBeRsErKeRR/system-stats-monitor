@@ -3,6 +3,7 @@ package stats
 import (
 	"context"
 	"errors"
+	"fmt"
 	"sync"
 	"time"
 
@@ -20,7 +21,10 @@ import (
 	"go.uber.org/zap"
 )
 
-var ErrCollector = errors.New("unsupported collector type")
+var (
+	ErrCollector = errors.New("unsupported collector type")
+	ErrStatsType = errors.New("unsupported stats type")
+)
 
 type Config struct {
 	IsCPUEnable            bool `mapstructure:"cpu_enable"`
@@ -34,89 +38,126 @@ type Stats struct {
 	CPUInfo               storage.CPUTimeStat          `json:"cpu_info"`                //nolint:tagliatelle
 	LoadInfo              storage.LoadStat             `json:"load_info"`               //nolint:tagliatelle
 	NetworkStateInfo      storage.NetworkStatesStat    `json:"network_state_info"`      //nolint:tagliatelle
-	NetworkStatisticsInfo storage.NetworkStats         `json:"network_statistics_info"` //nolint:tagliatelle
-	DiskUsageInfo         storage.UsageStats           `json:"disk_usage_info"`         //nolint:tagliatelle
-	DiskIoInfo            storage.DiskIoStat           `json:"disk_io_info"`            //nolint:tagliatelle
-	ProtocolTalkersInfo   storage.ProtocolTalkersStats `json:"protocol_talkers"`        //nolint:tagliatelle
-	BpsTalkersInfo        storage.BpsTalkersStats      `json:"bps_talkers"`             //nolint:tagliatelle
+	NetworkStatisticsInfo []storage.NetworkStatsItem   `json:"network_statistics_info"` //nolint:tagliatelle
+	DiskUsageInfo         []storage.UsageStatItem      `json:"disk_usage_info"`         //nolint:tagliatelle
+	DiskIoInfo            []storage.DiskIoStatItem     `json:"disk_io_info"`            //nolint:tagliatelle
+	ProtocolTalkersInfo   []storage.ProtocolTalkerItem `json:"protocol_talkers"`        //nolint:tagliatelle
+	BpsTalkersInfo        []storage.BpsItem            `json:"bps_talkers"`             //nolint:tagliatelle
 }
 
 type UseCase struct {
-	logger             logger.Logger
-	st                 storage.Storage
-	collectors         []monitor.Collector
-	constantCollectors []monitor.ConstantCollector
+	logger                 logger.Logger
+	st                     storage.Storage
+	collectors             map[string]monitor.Collector
+	constantCollectors     map[string]monitor.ConstantCollector
+	isCPUEnable            bool
+	isLoadEnable           bool
+	isNetworkEnable        bool
+	isDiskEnable           bool
+	isNetworkTalkersEnable bool
 }
 
 func New(ctx context.Context, cfg *Config, st storage.Storage, logger logger.Logger) (UseCase, error) {
-	collectors := make([]monitor.Collector, 0, 1)
-	constantCollectors := make([]monitor.ConstantCollector, 0, 1)
+	collectors := map[string]monitor.Collector{}
+	constantCollectors := map[string]monitor.ConstantCollector{}
 
 	if cfg.IsCPUEnable {
-		cpuC := cpu.New(st, logger)
+		cpuC := cpu.New(logger)
 		if err := cpuC.CheckCall(ctx); err != nil {
 			return UseCase{}, err
 		}
-		collectors = append(collectors, cpuC)
+		collectors["cpu"] = cpuC
 	}
 
 	if cfg.IsLoadEnable {
-		loadC := load.New(st, logger)
+		loadC := load.New(logger)
 		if err := loadC.CheckCall(ctx); err != nil {
 			return UseCase{}, err
 		}
-		collectors = append(collectors, loadC)
+		collectors["load"] = loadC
 	}
 
 	if cfg.IsNetworkEnable {
-		nstC := networkstates.New(st, logger)
+		nstC := networkstates.New(logger)
 		if err := nstC.CheckCall(ctx); err != nil {
 			return UseCase{}, err
 		}
-		nsC := networkstatistics.New(st, logger)
+		collectors["network_states"] = nstC
+
+		nsC := networkstatistics.New(logger)
 		if err := nsC.CheckCall(ctx); err != nil {
 			return UseCase{}, err
 		}
-		collectors = append(collectors, nstC)
-		collectors = append(collectors, nsC)
+		collectors["network_statistics"] = nsC
 	}
 
 	if cfg.IsDiskEnable {
-		duC := diskusage.New(st, logger)
+		duC := diskusage.New(logger)
 		if err := duC.CheckCall(ctx); err != nil {
 			return UseCase{}, err
 		}
-		dioC := diskio.New(st, logger)
+		collectors["du"] = duC
+
+		dioC := diskio.New(logger)
 		if err := dioC.CheckCall(ctx); err != nil {
 			return UseCase{}, err
 		}
-		collectors = append(collectors, duC)
-		collectors = append(collectors, dioC)
+		collectors["di"] = dioC
 	}
 
 	if cfg.IsNetworkTalkersEnable {
-		protocolC := protocoltalkers.New(st, logger)
+		protocolC := protocoltalkers.New(logger)
 		if err := protocolC.CheckCall(ctx); err != nil {
 			return UseCase{}, err
 		}
-		bspC := bpstalkers.New(st, logger)
+		constantCollectors["protocol_talkers"] = protocolC
+		bspC := bpstalkers.New(logger)
 		if err := bspC.CheckCall(ctx); err != nil {
 			return UseCase{}, err
 		}
-		constantCollectors = append(constantCollectors, protocolC)
-		constantCollectors = append(constantCollectors, bspC)
+		constantCollectors["bsp_talkers"] = bspC
 	}
 
 	return UseCase{
-		collectors:         collectors,
-		constantCollectors: constantCollectors,
-		st:                 st,
-		logger:             logger,
+		collectors:             collectors,
+		constantCollectors:     constantCollectors,
+		st:                     st,
+		logger:                 logger,
+		isCPUEnable:            cfg.IsCPUEnable,
+		isLoadEnable:           cfg.IsLoadEnable,
+		isNetworkEnable:        cfg.IsNetworkEnable,
+		isDiskEnable:           cfg.IsDiskEnable,
+		isNetworkTalkersEnable: cfg.IsNetworkTalkersEnable,
 	}, nil
 }
 
 func (s *UseCase) Clean(ctx context.Context, date time.Time) error {
 	return s.st.Clear(ctx, date)
+}
+
+func (s *UseCase) storeStats(ctx context.Context, data interface{}) error {
+	switch v := data.(type) {
+	case *storage.CPUTimeStat:
+		return s.st.StoreCPUTimeStat(ctx, *v)
+	case *storage.LoadStat:
+		return s.st.StoreLoadStat(ctx, *v)
+	case *storage.NetworkStatesStat:
+		return s.st.StoreNetworkStatesStat(ctx, *v)
+	case []storage.NetworkStatsItem:
+		return s.st.StoreNetworkStats(ctx, v)
+	case []storage.UsageStatItem:
+		return s.st.StoreUsageStats(ctx, v)
+	case []storage.DiskIoStatItem:
+		return s.st.StorDiskIoStats(ctx, v)
+	case storage.ProtocolTalkerItem:
+		return s.st.StoreProtocolTalkersStat(ctx, v)
+	case storage.BpsItem:
+		return s.st.StoreBpsTalkersStat(ctx, v)
+	case nil:
+		return nil
+	default:
+		return ErrCollector
+	}
 }
 
 func (s *UseCase) collectPeriodic(ctx context.Context, duration time.Duration) {
@@ -127,12 +168,17 @@ func (s *UseCase) collectPeriodic(ctx context.Context, duration time.Duration) {
 			s.logger.Info("start collect periodic data")
 			wg := sync.WaitGroup{}
 			wg.Add(len(s.collectors))
-			for _, c := range s.collectors {
+			for n, c := range s.collectors {
+				name := n
 				go func(collector monitor.Collector) {
 					defer wg.Done()
-					err := collector.Grab(ctx)
+					item, err := collector.Grab(ctx)
 					if err != nil {
-						s.logger.Error("failed to grab info", zap.Error(err))
+						s.logger.Error(name+": failed to grab info", zap.Error(err))
+					}
+					err = s.storeStats(ctx, item)
+					if err != nil {
+						s.logger.Error(name+": failed to store info", zap.Error(err))
 					}
 				}(c)
 			}
@@ -149,12 +195,29 @@ func (s *UseCase) collectConstant(ctx context.Context) {
 	s.logger.Info("start collect constant data")
 	wg := sync.WaitGroup{}
 	wg.Add(len(s.constantCollectors))
-	for _, c := range s.constantCollectors {
+	for n, c := range s.constantCollectors {
+		name := n
 		go func(collector monitor.ConstantCollector) {
 			defer wg.Done()
-			err := collector.GrabSub(ctx)
-			if err != nil {
-				s.logger.Error("failed to grab info", zap.Error(err))
+			stats, errC := collector.GrabSub(ctx)
+			for {
+				select {
+				case stat, ok := <-stats:
+					if !ok {
+						return
+					}
+					err := s.storeStats(ctx, stat)
+					if err != nil {
+						s.logger.Error(name+": failed to store info", zap.Error(err))
+					}
+				case err, ok := <-errC:
+					if !ok {
+						continue
+					}
+					s.logger.Error(fmt.Sprintf("%s: error get content: %v", name, err), zap.Error(err))
+				case <-ctx.Done():
+					return
+				}
 			}
 		}(c)
 	}
@@ -173,44 +236,78 @@ func (s *UseCase) Collect(ctx context.Context, duration time.Duration) error {
 
 func (s *UseCase) GetStats(ctx context.Context, duration int64) (Stats, error) {
 	stats := Stats{}
-	for _, collector := range s.collectors {
-		statsItem, err := collector.GetStats(ctx, duration)
+
+	if s.isCPUEnable {
+		lastCPUTimes, err := s.st.GetCPUTimeStats(ctx, duration)
 		if err != nil {
 			return stats, err
 		}
-		switch v := statsItem.(type) {
-		case storage.CPUTimeStat:
-			stats.CPUInfo = v
-		case storage.LoadStat:
-			stats.LoadInfo = v
-		case storage.NetworkStatesStat:
-			stats.NetworkStateInfo = v
-		case storage.NetworkStats:
-			stats.NetworkStatisticsInfo = v
-		case storage.UsageStats:
-			stats.DiskUsageInfo = v
-		case storage.DiskIoStat:
-			stats.DiskIoInfo = v
-		case storage.ProtocolTalkersStats:
-			stats.ProtocolTalkersInfo = v
-		default:
-			return stats, ErrCollector
+		stats.CPUInfo, err = getAvgCPU(lastCPUTimes)
+		if err != nil {
+			return stats, err
 		}
 	}
 
-	for _, collector := range s.constantCollectors {
-		statsItem, err := collector.GetStats(ctx, duration)
+	if s.isLoadEnable {
+		lastLoadInfo, err := s.st.GetLoadStats(ctx, duration)
 		if err != nil {
 			return stats, err
 		}
-		switch v := statsItem.(type) {
-		case storage.ProtocolTalkersStats:
-			stats.ProtocolTalkersInfo = v
-		case storage.BpsTalkersStats:
-			stats.BpsTalkersInfo = v
-		default:
-			return stats, ErrCollector
+
+		stats.LoadInfo, err = getAvgLoad(lastLoadInfo)
+		if err != nil {
+			return stats, err
 		}
+	}
+
+	if s.isDiskEnable {
+		lastDiskIo, err := s.st.GetDiskIoStats(ctx, duration)
+		if err != nil {
+			return stats, err
+		}
+		stats.DiskIoInfo, err = getAvgDiskIo(lastDiskIo)
+		if err != nil {
+			return stats, err
+		}
+
+		lastDu, err := s.st.GetUsageStats(ctx, duration)
+		if err != nil {
+			return stats, err
+		}
+		stats.DiskUsageInfo = getUniqueDu(lastDu)
+	}
+
+	if s.isNetworkEnable {
+		nsStats, err := s.st.GetNetworkStatesStats(ctx, duration)
+		if err != nil {
+			return stats, err
+		}
+		stats.NetworkStateInfo, err = getAvgNetworkStates(nsStats)
+		if err != nil {
+			return stats, err
+		}
+
+		nstStats, err := s.st.GetNetworkStats(ctx, duration)
+		if err != nil {
+			return stats, err
+		}
+		stats.NetworkStatisticsInfo = getUniqueNetworkStatistics(nstStats)
+
+	}
+
+	if s.isNetworkTalkersEnable {
+		bpsStats, err := s.st.GetBpsTalkersStats(ctx, duration)
+		if err != nil {
+			return stats, err
+		}
+		stats.BpsTalkersInfo = getUniqueBps(bpsStats, duration)
+
+		protocolStats, err := s.st.GetProtocolTalkersStats(ctx, duration)
+		if err != nil {
+			return stats, err
+		}
+		stats.ProtocolTalkersInfo = getUniqueProtocolTalkers(protocolStats)
+
 	}
 	return stats, nil
 }

@@ -14,11 +14,11 @@ message StatsResponse {
   CPUTimeStatValue cpu_info = 1;
   LoadStatValue load_info = 2;
   NetworkStateStatValue network_state_info = 3;
-  NetworkStatisticsValue network_statistics_info = 4;
-  DiskUsageValue disk_usage_info = 5;
-  DiskIoValue disk_io_info = 6;
-  ProtocolTalkersValue protocol_talkers = 7;
-  BpsTalkersValue bps_talkers = 8;
+  repeated NetworkStatItem network_statistics_info = 4;
+  repeated DiskUsageItem disk_usage_info = 5;
+  repeated DiskIoItem disk_io_info = 6;
+  repeated ProtocolTalkerItem protocol_talkers = 7;
+  repeated BpsTalkerItem bps_talkers = 8;
 }
 
 message CPUTimeStatValue {
@@ -45,10 +45,6 @@ message NetworkStatItem {
   int32 port = 5;
 }
 
-message NetworkStatisticsValue {
-  repeated NetworkStatItem items = 1;
-}
-
 message DiskUsageItem {
   string path = 1;
   string fstype = 2;
@@ -58,9 +54,6 @@ message DiskUsageItem {
   double inodes_available_percent = 6;
 }
 
-message DiskUsageValue {
-  repeated DiskUsageItem items = 1;
-}
 
 message DiskIoItem {
   string device = 1;
@@ -69,9 +62,6 @@ message DiskIoItem {
   double kb_write_s = 4;
 }
 
-message DiskIoValue {
-  repeated DiskIoItem items = 1;
-}
 
 message ProtocolTalkerItem {
   string protocol = 1;
@@ -79,9 +69,6 @@ message ProtocolTalkerItem {
   double bytes_percentage = 3;
 }
 
-message ProtocolTalkersValue {
-  repeated ProtocolTalkerItem items = 1;
-}
 
 message BpsTalkerItem {
   string source = 1;
@@ -91,9 +78,6 @@ message BpsTalkerItem {
   double numbers = 5;
 }
 
-message BpsTalkersValue {
-  repeated BpsTalkerItem items = 1;
-}
 
 
 service SystemStatsMonitorServiceV1 {

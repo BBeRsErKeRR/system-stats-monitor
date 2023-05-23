@@ -102,17 +102,17 @@ func (u *UI) updateWidgets() {
 		u.networkStateInfoWidget.Rows = append(u.networkStateInfoWidget.Rows, fmt.Sprintf("%s: %d", k, v))
 	}
 
-	u.networkStatisticsInfoWidget.Rows = make([]string, 0, len(u.stats.NetworkStatisticsInfo.Items))
-	for _, item := range u.stats.NetworkStatisticsInfo.Items {
+	u.networkStatisticsInfoWidget.Rows = make([]string, 0, len(u.stats.NetworkStatisticsInfo))
+	for _, item := range u.stats.NetworkStatisticsInfo {
 		data := fmt.Sprintf("%s: %v %v %v %v", item.Command, item.PID, item.User, item.Protocol, item.Port)
 		u.networkStatisticsInfoWidget.Rows = append(u.networkStatisticsInfoWidget.Rows, data)
 	}
 
-	u.diskUsageInfoWidget.Rows = make([]string, 0, len(u.stats.DiskUsageInfo.Items))
+	u.diskUsageInfoWidget.Rows = make([]string, 0, len(u.stats.DiskUsageInfo))
 	var maxInfo, maxUsed int
 	lengthItems := map[int][]int{}
 
-	for idx, item := range u.stats.DiskUsageInfo.Items {
+	for idx, item := range u.stats.DiskUsageInfo {
 		info := len(fmt.Sprintf("%v%s%s", idx, item.Path, item.Fstype))
 		used := len(fmt.Sprintf("%v%v", item.Used, ConvertFloat(item.AvailablePercent)))
 		lengthItems[idx] = []int{info, used}
@@ -123,7 +123,7 @@ func (u *UI) updateWidgets() {
 			maxUsed = used
 		}
 	}
-	for idx, item := range u.stats.DiskUsageInfo.Items {
+	for idx, item := range u.stats.DiskUsageInfo {
 		data := fmt.Sprintf("[%v] %s -> %s %s| [used: %vM %s](fg:yellow) %s| [inode: %vM %s](fg:cyan)",
 			idx,
 			item.Path,
@@ -138,8 +138,8 @@ func (u *UI) updateWidgets() {
 		u.diskUsageInfoWidget.Rows = append(u.diskUsageInfoWidget.Rows, data)
 	}
 
-	u.diskIoInfoWidget.Rows = make([]string, 0, len(u.stats.DiskIoInfo.Items))
-	for idx, item := range u.stats.DiskIoInfo.Items {
+	u.diskIoInfoWidget.Rows = make([]string, 0, len(u.stats.DiskIoInfo))
+	for idx, item := range u.stats.DiskIoInfo {
 		data := fmt.Sprintf("[%v] %s -> tps(%v) kB_read/s(%v) kB_wrtn/s(%v)",
 			idx,
 			item.Device,
@@ -150,8 +150,8 @@ func (u *UI) updateWidgets() {
 		u.diskIoInfoWidget.Rows = append(u.diskIoInfoWidget.Rows, data)
 	}
 
-	u.protocolTalkersInfoWidget.Rows = make([]string, 0, len(u.stats.ProtocolTalkersInfo.Items))
-	for _, item := range u.stats.ProtocolTalkersInfo.Items {
+	u.protocolTalkersInfoWidget.Rows = make([]string, 0, len(u.stats.ProtocolTalkersInfo))
+	for _, item := range u.stats.ProtocolTalkersInfo {
 		data := fmt.Sprintf("%s: %v  %v%%",
 			item.Protocol,
 			ConvertFloat(item.SendBytes),
@@ -160,8 +160,8 @@ func (u *UI) updateWidgets() {
 		u.protocolTalkersInfoWidget.Rows = append(u.protocolTalkersInfoWidget.Rows, data)
 	}
 
-	u.bpsTalkersInfoWidget.Rows = make([]string, 0, len(u.stats.BpsTalkersInfo.Items))
-	for idx, item := range u.stats.BpsTalkersInfo.Items {
+	u.bpsTalkersInfoWidget.Rows = make([]string, 0, len(u.stats.BpsTalkersInfo))
+	for idx, item := range u.stats.BpsTalkersInfo {
 		data := fmt.Sprintf("[%v] (%s) %s -> %s: %v  %v b/s",
 			idx,
 			item.Protocol,

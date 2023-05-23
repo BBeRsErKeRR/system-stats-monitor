@@ -48,8 +48,8 @@ func TestCollectDiskIo(t *testing.T) {
 			} else {
 				assert.NoError(t, err)
 				assert.Len(t, diskIoStats, len(tt.expectedStatsItems))
-				for i := range diskIoStats {
-					actual, expected := diskIoStats[i].(storage.DiskIoStatItem), tt.expectedStatsItems[i]
+				for i, el := range diskIoStats {
+					actual, expected := el, tt.expectedStatsItems[i]
 					assert.Equal(t, expected.Device, actual.Device)
 					assert.Equal(t, expected.Tps, actual.Tps)
 					assert.Equal(t, expected.KbReadS, actual.KbReadS)

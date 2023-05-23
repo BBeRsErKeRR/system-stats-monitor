@@ -22,11 +22,6 @@ func (ms *Storage) StoreStats(ctx context.Context, data interface{}) error {
 	return args.Error(0)
 }
 
-func (ms *Storage) BulkStoreStats(ctx context.Context, data []interface{}) error {
-	args := ms.Called(ctx, data)
-	return args.Error(0)
-}
-
 func (ms *Storage) Clear(ctx context.Context, date time.Time) error {
 	args := ms.Called(ctx, date)
 	return args.Error(0)
@@ -64,24 +59,27 @@ func (ms *Storage) GetNetworkStatesStats(ctx context.Context, period int64) ([]s
 	return ms.GetStats(ctx, period)
 }
 
-func (ms *Storage) StoreNetworkStats(ctx context.Context, data []interface{}) error {
-	return ms.BulkStoreStats(ctx, data)
+func (ms *Storage) StoreNetworkStats(ctx context.Context, data []storage.NetworkStatsItem) error {
+	args := ms.Called(ctx, data)
+	return args.Error(0)
 }
 
 func (ms *Storage) GetNetworkStats(ctx context.Context, period int64) ([]storage.Metric, error) {
 	return ms.GetStats(ctx, period)
 }
 
-func (ms *Storage) StoreUsageStat(ctx context.Context, data storage.UsageStatItem) error {
-	return ms.StoreStats(ctx, data)
+func (ms *Storage) StoreUsageStats(ctx context.Context, data []storage.UsageStatItem) error {
+	args := ms.Called(ctx, data)
+	return args.Error(0)
 }
 
 func (ms *Storage) GetUsageStats(ctx context.Context, period int64) ([]storage.Metric, error) {
 	return ms.GetStats(ctx, period)
 }
 
-func (ms *Storage) StorDiskIoStats(ctx context.Context, data []interface{}) error {
-	return ms.BulkStoreStats(ctx, data)
+func (ms *Storage) StorDiskIoStats(ctx context.Context, data []storage.NetworkStatsItem) error {
+	args := ms.Called(ctx, data)
+	return args.Error(0)
 }
 
 func (ms *Storage) GetDiskIoStats(ctx context.Context, period int64) ([]storage.Metric, error) {

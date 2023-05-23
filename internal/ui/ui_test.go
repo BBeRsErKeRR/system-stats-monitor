@@ -31,57 +31,47 @@ func TestUpdateWidgets(t *testing.T) {
 					"CLOSE_WAIT":  5,
 				},
 			},
-			NetworkStatisticsInfo: storage.NetworkStats{
-				Items: []storage.NetworkStatsItem{
-					{
-						Command:  "httpd",
-						PID:      1234,
-						User:     1001,
-						Protocol: "tcp",
-						Port:     80,
-					},
+			NetworkStatisticsInfo: []storage.NetworkStatsItem{
+				{
+					Command:  "httpd",
+					PID:      1234,
+					User:     1001,
+					Protocol: "tcp",
+					Port:     80,
 				},
 			},
-			DiskUsageInfo: storage.UsageStats{
-				Items: []storage.UsageStatItem{
-					{
-						Path:                   "/",
-						Fstype:                 "ext4",
-						Used:                   102400,
-						AvailablePercent:       70.0,
-						InodesUsed:             2048,
-						InodesAvailablePercent: 60.0,
-					},
+			DiskUsageInfo: []storage.UsageStatItem{
+				{
+					Path:                   "/",
+					Fstype:                 "ext4",
+					Used:                   102400,
+					AvailablePercent:       70.0,
+					InodesUsed:             2048,
+					InodesAvailablePercent: 60.0,
 				},
 			},
-			DiskIoInfo: storage.DiskIoStat{
-				Items: []storage.DiskIoStatItem{
-					{
-						Device:   "sda",
-						Tps:      10.0,
-						KbReadS:  1024.0,
-						KbWriteS: 512.0,
-					},
+			DiskIoInfo: []storage.DiskIoStatItem{
+				{
+					Device:   "sda",
+					Tps:      10.0,
+					KbReadS:  1024.0,
+					KbWriteS: 512.0,
 				},
 			},
-			ProtocolTalkersInfo: storage.ProtocolTalkersStats{
-				Items: []storage.ProtocolTalkerItem{
-					{
-						Protocol:        "tcp",
-						SendBytes:       1024.0,
-						BytesPercentage: 70.0,
-					},
+			ProtocolTalkersInfo: []storage.ProtocolTalkerItem{
+				{
+					Protocol:        "tcp",
+					SendBytes:       1024.0,
+					BytesPercentage: 70.0,
 				},
 			},
-			BpsTalkersInfo: storage.BpsTalkersStats{
-				Items: []storage.BpsItem{
-					{
-						Source:      "192.168.1.1",
-						Destination: "192.168.1.2",
-						Protocol:    "tcp",
-						Bps:         1024.0,
-						Numbers:     100.0,
-					},
+			BpsTalkersInfo: []storage.BpsItem{
+				{
+					Source:      "192.168.1.1",
+					Destination: "192.168.1.2",
+					Protocol:    "tcp",
+					Bps:         1024.0,
+					Numbers:     100.0,
 				},
 			},
 		},

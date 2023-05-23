@@ -31,13 +31,13 @@ type Storage interface {
 	StoreNetworkStatesStat(context.Context, NetworkStatesStat) error
 	GetNetworkStatesStats(context.Context, int64) ([]Metric, error)
 
-	StoreNetworkStats(context.Context, []interface{}) error
+	StoreNetworkStats(context.Context, []NetworkStatsItem) error
 	GetNetworkStats(context.Context, int64) ([]Metric, error)
 
-	StoreUsageStat(context.Context, UsageStatItem) error
+	StoreUsageStats(context.Context, []UsageStatItem) error
 	GetUsageStats(context.Context, int64) ([]Metric, error)
 
-	StorDiskIoStats(context.Context, []interface{}) error
+	StorDiskIoStats(context.Context, []DiskIoStatItem) error
 	GetDiskIoStats(context.Context, int64) ([]Metric, error)
 
 	StoreProtocolTalkersStat(context.Context, ProtocolTalkerItem) error

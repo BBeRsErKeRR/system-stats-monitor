@@ -12,13 +12,13 @@ import (
 	command "github.com/BBeRsErKeRR/system-stats-monitor/pkg/command"
 )
 
-func parseNetstatOut(output string) ([]interface{}, error) {
+func parseNetstatOut(output string) ([]storage.NetworkStatsItem, error) {
 	lines := strings.Split(output, "\n")
 	startLine := 2
 	if strings.Contains(lines[0], "Not all processes could") {
 		startLine = 4
 	}
-	result := make([]interface{}, 0, len(output)-startLine)
+	result := make([]storage.NetworkStatsItem, 0, len(output)-startLine)
 	for _, line := range lines[startLine:] {
 		values := strings.Fields(line)
 		if len(values) < 9 || values[5] != "LISTEN" {
@@ -57,7 +57,7 @@ func parseNetstatOut(output string) ([]interface{}, error) {
 	return result, nil
 }
 
-func getNS(ctx context.Context) ([]interface{}, error) {
+func getNS(ctx context.Context) ([]storage.NetworkStatsItem, error) {
 	var out []byte
 	var err error
 	out, err = command.WithContext(ctx, "sudo", "netstat", "-lntupe")

@@ -36,7 +36,7 @@ func (ms *MemStore) StoreStats(ctx context.Context, data interface{}) error {
 	return nil
 }
 
-func (ms *MemStore) BulkStoreStats(ctx context.Context, data []interface{}) error {
+func bulkStore[T any](ms *MemStore, data []T) error {
 	ms.Lock()
 	defer ms.Unlock()
 	date := time.Now()
@@ -169,24 +169,24 @@ func (st *Storage) GetNetworkStatesStats(ctx context.Context, period int64) ([]s
 	return st.nsSt.GetStats(ctx, period)
 }
 
-func (st *Storage) StoreNetworkStats(ctx context.Context, data []interface{}) error {
-	return st.nStatsSt.BulkStoreStats(ctx, data)
+func (st *Storage) StoreNetworkStats(ctx context.Context, data []storage.NetworkStatsItem) error {
+	return bulkStore(&st.nStatsSt, data)
 }
 
 func (st *Storage) GetNetworkStats(ctx context.Context, period int64) ([]storage.Metric, error) {
 	return st.nStatsSt.GetStats(ctx, period)
 }
 
-func (st *Storage) StoreUsageStat(ctx context.Context, data storage.UsageStatItem) error {
-	return st.duSt.StoreStats(ctx, data)
+func (st *Storage) StoreUsageStats(ctx context.Context, data []storage.UsageStatItem) error {
+	return bulkStore(&st.duSt, data)
 }
 
 func (st *Storage) GetUsageStats(ctx context.Context, period int64) ([]storage.Metric, error) {
 	return st.duSt.GetStats(ctx, period)
 }
 
-func (st *Storage) StorDiskIoStats(ctx context.Context, data []interface{}) error {
-	return st.dioSt.BulkStoreStats(ctx, data)
+func (st *Storage) StorDiskIoStats(ctx context.Context, data []storage.DiskIoStatItem) error {
+	return bulkStore(&st.dioSt, data)
 }
 
 func (st *Storage) GetDiskIoStats(ctx context.Context, period int64) ([]storage.Metric, error) {

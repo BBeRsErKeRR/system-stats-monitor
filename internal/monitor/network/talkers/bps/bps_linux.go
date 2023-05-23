@@ -45,9 +45,9 @@ func parseTCPDumpOut(line string) (interface{}, error) {
 	return item, nil
 }
 
-func getBps(ctx context.Context) (<-chan storage.BpsItem, <-chan error) {
-	parser := func(In <-chan string, errC <-chan error) (<-chan storage.BpsItem, <-chan error) {
-		res := make(chan storage.BpsItem)
+func getBps(ctx context.Context) (<-chan interface{}, <-chan error) {
+	parser := func(In <-chan string, errC <-chan error) (<-chan interface{}, <-chan error) {
+		res := make(chan interface{})
 		resErr := make(chan error)
 		go func() {
 			defer close(res)

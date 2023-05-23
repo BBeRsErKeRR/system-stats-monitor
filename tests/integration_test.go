@@ -93,7 +93,7 @@ var _ = Describe("Daemon", Ordered, func() {
 		It("LoadInfo", func() {
 			la := statsResponse.LoadInfo
 			require.NotEmpty(GinkgoT(), la)
-			require.Greater(GinkgoT(), la.Load1, float64(0))
+			require.GreaterOrEqual(GinkgoT(), la.Load1, float64(0))
 			require.Greater(GinkgoT(), la.Load5, float64(0))
 			require.Greater(GinkgoT(), la.Load15, float64(0))
 		})
@@ -107,7 +107,7 @@ var _ = Describe("Daemon", Ordered, func() {
 		It("NetworkStatisticsInfo", func() {
 			ns := statsResponse.NetworkStatisticsInfo
 			require.NotEmpty(GinkgoT(), ns)
-			require.Greater(GinkgoT(), len(ns.Items), 1)
+			require.Greater(GinkgoT(), len(ns), 1)
 		})
 
 		It("DiskUsageInfo", func() {

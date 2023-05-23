@@ -38,11 +38,11 @@ func parseData(output string) (*storage.CPUTimeStat, error) {
 	if err != nil {
 		return nil, err
 	}
-	ct := NewCPUTimeStat(
-		user,
-		system,
-		idle,
-	)
+	ct := storage.CPUTimeStat{
+		User:   user,
+		System: system,
+		Idle:   idle,
+	}
 	return &ct, nil
 }
 

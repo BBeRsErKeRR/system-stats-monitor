@@ -9,18 +9,19 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/BBeRsErKeRR/system-stats-monitor/internal/storage"
 	command "github.com/BBeRsErKeRR/system-stats-monitor/pkg/command"
 )
 
 var ErrOutput = errors.New("bad output")
 
-func parseSSOut(output string) ([]interface{}, error) {
+func parseSSOut(output string) ([]storage.DiskIoStatItem, error) {
 	lines := strings.Split(output, "\n")
 	length := len(output)
 	if length < 3 {
-		return []interface{}{}, ErrOutput
+		return nil, ErrOutput
 	}
-	result := make([]interface{}, 0, length-3)
+	result := make([]storage.DiskIoStatItem, 0, length-3)
 	for _, line := range lines[3:] {
 		fields := strings.Fields(line)
 		if len(fields) < 1 {
@@ -47,7 +48,7 @@ func parseSSOut(output string) ([]interface{}, error) {
 	return result, nil
 }
 
-func collectDiskIo(ctx context.Context) ([]interface{}, error) {
+func collectDiskIo(ctx context.Context) ([]storage.DiskIoStatItem, error) {
 	out, err := command.WithContext(ctx, "iostat", "-d", "-k")
 	if err != nil {
 		return nil, err

@@ -38,8 +38,8 @@ func getStatsResponse(stats stats.Stats) *StatsResponse {
 		Counters: stats.NetworkStateInfo.Counters,
 	}
 
-	statisticsItems := make([]*NetworkStatItem, 0, len(stats.NetworkStatisticsInfo.Items))
-	for _, statItem := range stats.NetworkStatisticsInfo.Items {
+	statisticsItems := make([]*NetworkStatItem, 0, len(stats.NetworkStatisticsInfo))
+	for _, statItem := range stats.NetworkStatisticsInfo {
 		statisticsItems = append(statisticsItems, &NetworkStatItem{
 			Command:  statItem.Command,
 			Pid:      statItem.PID,
@@ -49,8 +49,8 @@ func getStatsResponse(stats stats.Stats) *StatsResponse {
 		})
 	}
 
-	duItems := make([]*DiskUsageItem, 0, len(stats.DiskUsageInfo.Items))
-	for _, statItem := range stats.DiskUsageInfo.Items {
+	duItems := make([]*DiskUsageItem, 0, len(stats.DiskUsageInfo))
+	for _, statItem := range stats.DiskUsageInfo {
 		duItems = append(duItems, &DiskUsageItem{
 			Path:                   statItem.Path,
 			Fstype:                 statItem.Fstype,
@@ -61,8 +61,8 @@ func getStatsResponse(stats stats.Stats) *StatsResponse {
 		})
 	}
 
-	dIoItems := make([]*DiskIoItem, 0, len(stats.DiskIoInfo.Items))
-	for _, statItem := range stats.DiskIoInfo.Items {
+	dIoItems := make([]*DiskIoItem, 0, len(stats.DiskIoInfo))
+	for _, statItem := range stats.DiskIoInfo {
 		dIoItems = append(dIoItems, &DiskIoItem{
 			Device:   statItem.Device,
 			Tps:      statItem.Tps,
@@ -71,16 +71,16 @@ func getStatsResponse(stats stats.Stats) *StatsResponse {
 		})
 	}
 
-	protocolTalkers := make([]*ProtocolTalkerItem, 0, len(stats.ProtocolTalkersInfo.Items))
-	for _, statItem := range stats.ProtocolTalkersInfo.Items {
+	protocolTalkers := make([]*ProtocolTalkerItem, 0, len(stats.ProtocolTalkersInfo))
+	for _, statItem := range stats.ProtocolTalkersInfo {
 		protocolTalkers = append(protocolTalkers, &ProtocolTalkerItem{
 			Protocol:        statItem.Protocol,
 			SendBytes:       statItem.SendBytes,
 			BytesPercentage: statItem.BytesPercentage,
 		})
 	}
-	bpsTalkers := make([]*BpsTalkerItem, 0, len(stats.BpsTalkersInfo.Items))
-	for _, statItem := range stats.BpsTalkersInfo.Items {
+	bpsTalkers := make([]*BpsTalkerItem, 0, len(stats.BpsTalkersInfo))
+	for _, statItem := range stats.BpsTalkersInfo {
 		bpsTalkers = append(bpsTalkers, &BpsTalkerItem{
 			Source:      statItem.Source,
 			Destination: statItem.Destination,
@@ -91,30 +91,20 @@ func getStatsResponse(stats stats.Stats) *StatsResponse {
 	}
 
 	return &StatsResponse{
-		CpuInfo:          cpuInfo,
-		LoadInfo:         loadInfo,
-		NetworkStateInfo: nsInfo,
-		NetworkStatisticsInfo: &NetworkStatisticsValue{
-			Items: statisticsItems,
-		},
-		DiskUsageInfo: &DiskUsageValue{
-			Items: duItems,
-		},
-		DiskIoInfo: &DiskIoValue{
-			Items: dIoItems,
-		},
-		ProtocolTalkers: &ProtocolTalkersValue{
-			Items: protocolTalkers,
-		},
-		BpsTalkers: &BpsTalkersValue{
-			Items: bpsTalkers,
-		},
+		CpuInfo:               cpuInfo,
+		LoadInfo:              loadInfo,
+		NetworkStateInfo:      nsInfo,
+		NetworkStatisticsInfo: statisticsItems,
+		DiskUsageInfo:         duItems,
+		DiskIoInfo:            dIoItems,
+		ProtocolTalkers:       protocolTalkers,
+		BpsTalkers:            bpsTalkers,
 	}
 }
 
 func ResolveResponse(resp *StatsResponse) *stats.Stats {
-	statisticsItems := make([]storage.NetworkStatsItem, 0, len(resp.GetNetworkStatisticsInfo().GetItems()))
-	for _, statItem := range resp.GetNetworkStatisticsInfo().GetItems() {
+	statisticsItems := make([]storage.NetworkStatsItem, 0, len(resp.GetNetworkStatisticsInfo()))
+	for _, statItem := range resp.GetNetworkStatisticsInfo() {
 		statisticsItems = append(statisticsItems, storage.NetworkStatsItem{
 			Command:  statItem.Command,
 			PID:      statItem.Pid,
@@ -124,8 +114,8 @@ func ResolveResponse(resp *StatsResponse) *stats.Stats {
 		})
 	}
 
-	duItems := make([]storage.UsageStatItem, 0, len(resp.GetDiskUsageInfo().GetItems()))
-	for _, respItem := range resp.GetDiskUsageInfo().GetItems() {
+	duItems := make([]storage.UsageStatItem, 0, len(resp.GetDiskUsageInfo()))
+	for _, respItem := range resp.GetDiskUsageInfo() {
 		duItems = append(duItems, storage.UsageStatItem{
 			Path:                   respItem.Path,
 			Fstype:                 respItem.Fstype,
@@ -136,8 +126,8 @@ func ResolveResponse(resp *StatsResponse) *stats.Stats {
 		})
 	}
 
-	dIoItems := make([]storage.DiskIoStatItem, 0, len(resp.GetDiskIoInfo().GetItems()))
-	for _, statItem := range resp.GetDiskIoInfo().GetItems() {
+	dIoItems := make([]storage.DiskIoStatItem, 0, len(resp.GetDiskIoInfo()))
+	for _, statItem := range resp.GetDiskIoInfo() {
 		dIoItems = append(dIoItems, storage.DiskIoStatItem{
 			Device:   statItem.Device,
 			Tps:      statItem.Tps,
@@ -146,16 +136,16 @@ func ResolveResponse(resp *StatsResponse) *stats.Stats {
 		})
 	}
 
-	protocolTalkers := make([]storage.ProtocolTalkerItem, 0, len(resp.GetProtocolTalkers().GetItems()))
-	for _, statItem := range resp.GetProtocolTalkers().GetItems() {
+	protocolTalkers := make([]storage.ProtocolTalkerItem, 0, len(resp.GetProtocolTalkers()))
+	for _, statItem := range resp.GetProtocolTalkers() {
 		protocolTalkers = append(protocolTalkers, storage.ProtocolTalkerItem{
 			Protocol:        statItem.Protocol,
 			SendBytes:       statItem.SendBytes,
 			BytesPercentage: statItem.BytesPercentage,
 		})
 	}
-	bpsTalkers := make([]storage.BpsItem, 0, len(resp.GetBpsTalkers().GetItems()))
-	for _, statItem := range resp.GetBpsTalkers().GetItems() {
+	bpsTalkers := make([]storage.BpsItem, 0, len(resp.GetBpsTalkers()))
+	for _, statItem := range resp.GetBpsTalkers() {
 		bpsTalkers = append(bpsTalkers, storage.BpsItem{
 			Source:      statItem.Source,
 			Destination: statItem.Destination,
@@ -178,21 +168,11 @@ func ResolveResponse(resp *StatsResponse) *stats.Stats {
 		NetworkStateInfo: storage.NetworkStatesStat{
 			Counters: resp.GetNetworkStateInfo().GetCounters(),
 		},
-		NetworkStatisticsInfo: storage.NetworkStats{
-			Items: statisticsItems,
-		},
-		DiskUsageInfo: storage.UsageStats{
-			Items: duItems,
-		},
-		DiskIoInfo: storage.DiskIoStat{
-			Items: dIoItems,
-		},
-		ProtocolTalkersInfo: storage.ProtocolTalkersStats{
-			Items: protocolTalkers,
-		},
-		BpsTalkersInfo: storage.BpsTalkersStats{
-			Items: bpsTalkers,
-		},
+		NetworkStatisticsInfo: statisticsItems,
+		DiskUsageInfo:         duItems,
+		DiskIoInfo:            dIoItems,
+		ProtocolTalkersInfo:   protocolTalkers,
+		BpsTalkersInfo:        bpsTalkers,
 	}
 }
 

@@ -24,10 +24,6 @@ type NetworkStatsItem struct {
 	Port     int32
 }
 
-type NetworkStats struct {
-	Items []NetworkStatsItem
-}
-
 type UsageStatItem struct {
 	Path                   string  `json:"path"`
 	Fstype                 string  `json:"fstype"`
@@ -37,19 +33,11 @@ type UsageStatItem struct {
 	InodesAvailablePercent float64 `json:"inodes_available_percent"` //nolint:tagliatelle
 }
 
-type UsageStats struct {
-	Items []UsageStatItem
-}
-
 type DiskIoStatItem struct {
 	Device   string  `json:"device"`
 	Tps      float64 `json:"tps"`
 	KbReadS  float64 `json:"kb_read_s"`  //nolint:tagliatelle
 	KbWriteS float64 `json:"kb_write_s"` //nolint:tagliatelle
-}
-
-type DiskIoStat struct {
-	Items []DiskIoStatItem
 }
 
 type ProtocolTalkerItem struct {
@@ -58,18 +46,10 @@ type ProtocolTalkerItem struct {
 	BytesPercentage float64 `json:"bytes_percentage"` //nolint:tagliatelle
 }
 
-type ProtocolTalkersStats struct {
-	Items []ProtocolTalkerItem
-}
-
 type BpsItem struct {
 	Source      string  `json:"source"`
 	Destination string  `json:"destination"`
 	Protocol    string  `json:"protocol"`
 	Bps         float64 `json:"bps"`
 	Numbers     float64 `json:"numbers"`
-}
-
-type BpsTalkersStats struct {
-	Items []BpsItem
 }
