@@ -25,6 +25,6 @@ jobs:
       - name: make lint
         uses: golangci/golangci-lint-action@v3
         with:
-          version: v1.51.1
+          version: v1.52.2
           working-directory: ${{ env.BRANCH }}
           args: --timeout 3m0s --verbose #--skip-dirs='/opt/hostedtoolcache/go|/go/pkg/mod'
