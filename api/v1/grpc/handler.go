@@ -199,12 +199,18 @@ func ResolveResponse(resp *StatsResponse) *stats.Stats {
 func (h *Handler) StartMonitoring(req *StartMonitoringRequest, srv SystemStatsMonitorServiceV1_StartMonitoringServer) error { //nolint:lll
 	st := h.app.CreateStorage()
 	ctx := srv.Context()
+	if err := ctx.Err(); err != nil {
+		return err
+	}
 	err := st.Connect(ctx)
 	if err != nil {
 		return err
 	}
 	defer st.Close(ctx)
-	useCase := h.app.CreateUseCase(st)
+	useCase, err := h.app.CreateUseCase(ctx, st)
+	if err != nil {
+		return err
+	}
 	result, err := h.app.StartMonitoring(ctx, req.GetResponseDuration(), req.GetWaitDuration(), useCase)
 	if err != nil {
 		return err

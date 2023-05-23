@@ -11,3 +11,7 @@ import (
 func getLoad() (*storage.LoadStat, error) {
 	return nil, monitor.ErrNotImplemented
 }
+
+func checkCall(ctx context.Context) error {
+	return monitor.ErrNotImplemented
+}

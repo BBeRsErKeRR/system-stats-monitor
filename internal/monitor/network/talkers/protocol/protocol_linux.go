@@ -5,7 +5,6 @@ package protocoltalkers
 
 import (
 	"context"
-	"os"
 	"strconv"
 	"strings"
 
@@ -44,19 +43,6 @@ func parseTCPDumpOut(line string) (interface{}, error) {
 }
 
 func getTalkers(ctx context.Context) (<-chan storage.ProtocolTalkerItem, <-chan error) {
-	executor := func() (chan string, chan error) {
-		var out chan string
-		var errC chan error
-
-		if os.Geteuid() == 0 {
-			out, errC = command.Stream(ctx, "tcpdump", "-ntq", "-i", "any", "-Q", "inout", "-l")
-		} else {
-			out, errC = command.Stream(ctx, "sudo", "tcpdump", "-ntq", "-i", "any", "-Q", "inout", "-l")
-		}
-
-		return out, errC
-	}
-
 	parser := func(In <-chan string, errC <-chan error) (<-chan storage.ProtocolTalkerItem, <-chan error) {
 		res := make(chan storage.ProtocolTalkerItem)
 		resErr := make(chan error)
@@ -88,5 +74,10 @@ func getTalkers(ctx context.Context) (<-chan storage.ProtocolTalkerItem, <-chan 
 		return res, resErr
 	}
 
-	return parser(executor())
+	return parser(command.Stream(ctx, "sudo", "tcpdump", "-ntq", "-i", "any", "-Q", "inout", "-l"))
+}
+
+func checkCall(ctx context.Context) error {
+	_, err := command.WithContext(ctx, "sudo", "tcpdump", "-h")
+	return err
 }

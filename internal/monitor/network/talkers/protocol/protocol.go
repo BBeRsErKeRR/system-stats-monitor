@@ -88,3 +88,7 @@ func (c *StatCollector) collectUnique(intSlice []storage.Metric) []storage.Proto
 
 	return list
 }
+
+func (s *StatCollector) CheckCall(ctx context.Context) error {
+	return checkCall(ctx)
+}

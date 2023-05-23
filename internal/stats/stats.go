@@ -48,31 +48,63 @@ type UseCase struct {
 	constantCollectors []monitor.ConstantCollector
 }
 
-func New(cfg *Config, st storage.Storage, logger logger.Logger) UseCase {
+func New(ctx context.Context, cfg *Config, st storage.Storage, logger logger.Logger) (UseCase, error) {
 	collectors := make([]monitor.Collector, 0, 1)
 	constantCollectors := make([]monitor.ConstantCollector, 0, 1)
 
 	if cfg.IsCPUEnable {
-		collectors = append(collectors, cpu.New(st, logger))
+		cpuC := cpu.New(st, logger)
+		if err := cpuC.CheckCall(ctx); err != nil {
+			return UseCase{}, err
+		}
+		collectors = append(collectors, cpuC)
 	}
 
 	if cfg.IsLoadEnable {
-		collectors = append(collectors, load.New(st, logger))
+		loadC := load.New(st, logger)
+		if err := loadC.CheckCall(ctx); err != nil {
+			return UseCase{}, err
+		}
+		collectors = append(collectors, loadC)
 	}
 
 	if cfg.IsNetworkEnable {
-		collectors = append(collectors, networkstates.New(st, logger))
-		collectors = append(collectors, networkstatistics.New(st, logger))
+		nstC := networkstates.New(st, logger)
+		if err := nstC.CheckCall(ctx); err != nil {
+			return UseCase{}, err
+		}
+		nsC := networkstatistics.New(st, logger)
+		if err := nsC.CheckCall(ctx); err != nil {
+			return UseCase{}, err
+		}
+		collectors = append(collectors, nstC)
+		collectors = append(collectors, nsC)
 	}
 
 	if cfg.IsDiskEnable {
-		collectors = append(collectors, diskusage.New(st, logger))
-		collectors = append(collectors, diskio.New(st, logger))
+		duC := diskusage.New(st, logger)
+		if err := duC.CheckCall(ctx); err != nil {
+			return UseCase{}, err
+		}
+		dioC := diskio.New(st, logger)
+		if err := dioC.CheckCall(ctx); err != nil {
+			return UseCase{}, err
+		}
+		collectors = append(collectors, duC)
+		collectors = append(collectors, dioC)
 	}
 
 	if cfg.IsNetworkTalkersEnable {
-		constantCollectors = append(constantCollectors, protocoltalkers.New(st, logger))
-		constantCollectors = append(constantCollectors, bpstalkers.New(st, logger))
+		protocolC := protocoltalkers.New(st, logger)
+		if err := protocolC.CheckCall(ctx); err != nil {
+			return UseCase{}, err
+		}
+		bspC := bpstalkers.New(st, logger)
+		if err := bspC.CheckCall(ctx); err != nil {
+			return UseCase{}, err
+		}
+		constantCollectors = append(constantCollectors, protocolC)
+		constantCollectors = append(constantCollectors, bspC)
 	}
 
 	return UseCase{
@@ -80,7 +112,7 @@ func New(cfg *Config, st storage.Storage, logger logger.Logger) UseCase {
 		constantCollectors: constantCollectors,
 		st:                 st,
 		logger:             logger,
-	}
+	}, nil
 }
 
 func (s *UseCase) Clean(ctx context.Context, date time.Time) error {

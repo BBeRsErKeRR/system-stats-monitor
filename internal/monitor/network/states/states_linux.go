@@ -42,3 +42,8 @@ func getNS(ctx context.Context) (*storage.NetworkStatesStat, error) {
 	}
 	return parseSSOut(string(out))
 }
+
+func checkCall(ctx context.Context) error {
+	_, err := command.WithContext(ctx, "ss", "-ta")
+	return err
+}

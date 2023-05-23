@@ -58,3 +58,7 @@ func (c *StatCollector) GetStats(ctx context.Context, period int64) (interface{}
 		Counters: avgNs,
 	}, nil
 }
+
+func (s *StatCollector) CheckCall(ctx context.Context) error {
+	return checkCall(ctx)
+}

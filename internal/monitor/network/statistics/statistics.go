@@ -9,19 +9,19 @@ import (
 	"github.com/BBeRsErKeRR/system-stats-monitor/internal/storage"
 )
 
-type NSCollector struct {
+type StatCollector struct {
 	st     storage.Storage
 	logger logger.Logger
 }
 
-func New(st storage.Storage, logger logger.Logger) *NSCollector {
-	return &NSCollector{
+func New(st storage.Storage, logger logger.Logger) *StatCollector {
+	return &StatCollector{
 		st:     st,
 		logger: logger,
 	}
 }
 
-func (c *NSCollector) Grab(ctx context.Context) error {
+func (c *StatCollector) Grab(ctx context.Context) error {
 	c.logger.Info("start collect data")
 	stats, err := getNS(ctx)
 	if err != nil {
@@ -35,7 +35,7 @@ func (c *NSCollector) Grab(ctx context.Context) error {
 	return nil
 }
 
-func (c *NSCollector) GetStats(ctx context.Context, period int64) (interface{}, error) {
+func (c *StatCollector) GetStats(ctx context.Context, period int64) (interface{}, error) {
 	nsStats, err := c.st.GetNetworkStats(ctx, period)
 	if err != nil {
 		return nil, err
@@ -62,4 +62,8 @@ func unique(intSlice []storage.Metric) []storage.NetworkStatsItem {
 		}
 	}
 	return list
+}
+
+func (s *StatCollector) CheckCall(ctx context.Context) error {
+	return checkCall(ctx)
 }

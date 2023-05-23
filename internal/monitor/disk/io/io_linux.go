@@ -54,3 +54,8 @@ func collectDiskIo(ctx context.Context) ([]interface{}, error) {
 	}
 	return parseSSOut(string(out))
 }
+
+func checkCall(ctx context.Context) error {
+	_, err := command.WithContext(ctx, "iostat", "-d", "-k")
+	return err
+}

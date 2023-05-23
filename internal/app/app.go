@@ -38,8 +38,8 @@ func (a *App) CreateStorage() storage.Storage {
 	return memorystorage.New()
 }
 
-func (a *App) CreateUseCase(st storage.Storage) stats.UseCase {
-	return stats.New(a.statsConfig, st, a.logger)
+func (a *App) CreateUseCase(ctx context.Context, st storage.Storage) (stats.UseCase, error) {
+	return stats.New(ctx, a.statsConfig, st, a.logger)
 }
 
 func (a *App) StartMonitoring(ctx context.Context, rd, wp int64, u stats.UseCase) (<-chan stats.Stats, error) {

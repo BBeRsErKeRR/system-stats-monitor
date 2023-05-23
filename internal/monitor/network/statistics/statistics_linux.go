@@ -5,7 +5,6 @@ package networkstatistics
 
 import (
 	"context"
-	"os"
 	"strconv"
 	"strings"
 
@@ -61,20 +60,21 @@ func parseNetstatOut(output string) ([]interface{}, error) {
 func getNS(ctx context.Context) ([]interface{}, error) {
 	var out []byte
 	var err error
-	if os.Geteuid() == 0 { //nolint:nestif
+	out, err = command.WithContext(ctx, "sudo", "netstat", "-lntupe")
+	if err != nil {
 		out, err = command.WithContext(ctx, "netstat", "-lntupe")
 		if err != nil {
 			return nil, err
 		}
-	} else {
-		out, err = command.WithContext(ctx, "sudo", "netstat", "-lntupe")
-		if err != nil {
-			out, err = command.WithContext(ctx, "netstat", "-lntupe")
-			if err != nil {
-				return nil, err
-			}
-		}
 	}
 
 	return parseNetstatOut(string(out))
+}
+
+func checkCall(ctx context.Context) error {
+	_, err := command.WithContext(ctx, "sudo", "netstat", "-lntupe")
+	if err != nil {
+		_, err = command.WithContext(ctx, "netstat", "-lntupe")
+	}
+	return err
 }

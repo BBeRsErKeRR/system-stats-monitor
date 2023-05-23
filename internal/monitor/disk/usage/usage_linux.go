@@ -114,3 +114,8 @@ func getDU(ctx context.Context) ([]storage.UsageStatItem, error) {
 	}
 	return parseDfOut(string(outK), string(outI))
 }
+
+func checkCall(ctx context.Context) error {
+	_, err := command.WithContext(ctx, "df")
+	return err
+}

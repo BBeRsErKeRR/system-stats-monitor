@@ -36,16 +36,10 @@ run-daemon: build-daemon ## Run monitor app
 run-client: build-client ## Run client app
 	$(BIN_CLIENT) --config ./configs/config_client.toml
 
-build-test:
-	go build -v -o $(BIN_TEST) -ldflags "$(LDFLAGS)" ./cmd/cmd
-
-run-test: build-test ## Run client app
-	$(BIN_TEST)
-
 test: ## Execute tests
 	go test  -covermode=atomic -coverprofile=coverage.out -race -count 100 ./internal/... ./api/... ./pkg/...
 
-integration: ## Execute tests go test -v -race -count=10 ./tests/...
+integration: ## Execute integration tests
 	ginkgo -p -v --repeat=10 ./tests --
 
 coverage: test ## Test coverage

@@ -9,19 +9,19 @@ import (
 	"github.com/BBeRsErKeRR/system-stats-monitor/internal/storage"
 )
 
-type UsageCollector struct {
+type StatCollector struct {
 	st     storage.Storage
 	logger logger.Logger
 }
 
-func New(st storage.Storage, logger logger.Logger) *UsageCollector {
-	return &UsageCollector{
+func New(st storage.Storage, logger logger.Logger) *StatCollector {
+	return &StatCollector{
 		st:     st,
 		logger: logger,
 	}
 }
 
-func (c *UsageCollector) Grab(ctx context.Context) error {
+func (c *StatCollector) Grab(ctx context.Context) error {
 	c.logger.Info("start collect data")
 	stats, err := getDU(ctx)
 	if err != nil {
@@ -37,7 +37,7 @@ func (c *UsageCollector) Grab(ctx context.Context) error {
 	return nil
 }
 
-func (c *UsageCollector) GetStats(ctx context.Context, period int64) (interface{}, error) {
+func (c *StatCollector) GetStats(ctx context.Context, period int64) (interface{}, error) {
 	stats, err := c.st.GetUsageStats(ctx, period)
 	if err != nil {
 		return nil, err
@@ -63,4 +63,8 @@ func unique(intSlice []storage.Metric) []storage.UsageStatItem {
 		}
 	}
 	return list
+}
+
+func (s *StatCollector) CheckCall(ctx context.Context) error {
+	return checkCall(ctx)
 }

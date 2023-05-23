@@ -13,3 +13,7 @@ import (
 func getNS(ctx context.Context) (*storage.NetworkStatesStat, error) {
 	return nil, monitor.ErrNotImplemented
 }
+
+func checkCall(ctx context.Context) error {
+	return monitor.ErrNotImplemented
+}

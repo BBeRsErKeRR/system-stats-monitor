@@ -4,6 +4,7 @@
 package load
 
 import (
+	"context"
 	"strconv"
 	"strings"
 
@@ -41,4 +42,9 @@ func getLoad() (*storage.LoadStat, error) {
 		return nil, err
 	}
 	return parseStatLine(lines)
+}
+
+func checkCall(ctx context.Context) error {
+	_, err := files.ReadLinesOffsetN("/proc/loadavg", 0, 1)
+	return err
 }

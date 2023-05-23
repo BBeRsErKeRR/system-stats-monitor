@@ -34,17 +34,16 @@ var RootCmd = &cobra.Command{
 		}
 
 		monitor := app.New(logg, config.App, config.StatsConfig)
-		grpc := internalgrpc.NewServer(logg, monitor, config.GRPCServer)
+		gServer := internalgrpc.NewServer(logg, monitor, config.GRPCServer)
 
 		go func() {
-			if err := grpc.Start(ctx); err != nil {
+			if err := gServer.Start(ctx); err != nil {
 				logg.Error("failed to start grpc server: " + err.Error())
 				cancel()
 			}
 		}()
 
-		// defer st.Close(ctx)
-		defer grpc.Stop()
+		defer gServer.Stop()
 
 		<-ctx.Done()
 	},

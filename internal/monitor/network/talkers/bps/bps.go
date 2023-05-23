@@ -86,3 +86,7 @@ func (c *StatCollector) collectUnique(intSlice []storage.Metric, period int64) [
 
 	return list
 }
+
+func (s *StatCollector) CheckCall(ctx context.Context) error {
+	return checkCall(ctx)
+}

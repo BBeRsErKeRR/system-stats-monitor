@@ -9,6 +9,6 @@ import (
 
 type Application interface {
 	StartMonitoring(context.Context, int64, int64, stats.UseCase) (<-chan stats.Stats, error)
-	CreateUseCase(storage.Storage) stats.UseCase
+	CreateUseCase(context.Context, storage.Storage) (stats.UseCase, error)
 	CreateStorage() storage.Storage
 }

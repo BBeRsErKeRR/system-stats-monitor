@@ -13,3 +13,7 @@ import (
 func getCPUTimes(ctx context.Context) (*storage.CPUTimeStat, error) {
 	return nil, monitor.ErrNotImplemented
 }
+
+func checkCall(ctx context.Context) error {
+	return monitor.ErrNotImplemented
+}

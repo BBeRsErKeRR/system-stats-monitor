@@ -5,7 +5,6 @@ package bpstalkers
 
 import (
 	"context"
-	"os"
 	"strconv"
 	"strings"
 
@@ -47,19 +46,6 @@ func parseTCPDumpOut(line string) (interface{}, error) {
 }
 
 func getBps(ctx context.Context) (<-chan storage.BpsItem, <-chan error) {
-	executor := func() (chan string, chan error) {
-		var out chan string
-		var errC chan error
-
-		if os.Geteuid() == 0 {
-			out, errC = command.Stream(ctx, "tcpdump", "-ntq", "-i", "any", "-Q", "inout", "-ttt", "-l")
-		} else {
-			out, errC = command.Stream(ctx, "sudo", "tcpdump", "-ntq", "-i", "any", "-Q", "inout", "-ttt", "-l")
-		}
-
-		return out, errC
-	}
-
 	parser := func(In <-chan string, errC <-chan error) (<-chan storage.BpsItem, <-chan error) {
 		res := make(chan storage.BpsItem)
 		resErr := make(chan error)
@@ -94,5 +80,10 @@ func getBps(ctx context.Context) (<-chan storage.BpsItem, <-chan error) {
 		return res, resErr
 	}
 
-	return parser(executor())
+	return parser(command.Stream(ctx, "sudo", "tcpdump", "-ntq", "-i", "any", "-Q", "inout", "-ttt", "-l"))
+}
+
+func checkCall(ctx context.Context) error {
+	_, err := command.WithContext(ctx, "sudo", "tcpdump", "-h")
+	return err
 }

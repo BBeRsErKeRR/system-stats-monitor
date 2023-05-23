@@ -13,3 +13,7 @@ import (
 func getDU(ctx context.Context) ([]storage.UsageStatItem, error) {
 	return nil, monitor.ErrNotImplemented
 }
+
+func checkCall(ctx context.Context) error {
+	return monitor.ErrNotImplemented
+}

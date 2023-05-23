@@ -16,3 +16,7 @@ func getTalkers(ctx context.Context) (<-chan storage.ProtocolTalkerItem, <-chan 
 	errC <- monitor.ErrNotImplemented
 	return nil, errC
 }
+
+func checkCall(ctx context.Context) error {
+	return monitor.ErrNotImplemented
+}

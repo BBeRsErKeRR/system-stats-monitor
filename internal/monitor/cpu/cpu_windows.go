@@ -59,3 +59,14 @@ func getCPUTimes(ctx context.Context) (*storage.CPUTimeStat, error) {
 	}
 	return parseData(string(out))
 }
+
+func checkCall(ctx context.Context) error {
+	_, err := command.WithContext(ctx, "typeperf",
+		`Processor Information(_Total)\% Privileged Time`,
+		`Processor Information(_Total)\% User Time`,
+		`Processor Information(_Total)\% Idle Time`,
+		"-sc",
+		"1",
+	)
+	return err
+}

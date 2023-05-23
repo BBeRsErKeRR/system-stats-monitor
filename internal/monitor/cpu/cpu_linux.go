@@ -69,3 +69,8 @@ func getCPUTimes(ctx context.Context) (*storage.CPUTimeStat, error) {
 	}
 	return parseStatLine(lines[0])
 }
+
+func checkCall(ctx context.Context) error {
+	_, err := files.ReadLinesOffsetN("/proc/stat", 0, 1)
+	return err
+}

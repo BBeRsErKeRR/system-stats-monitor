@@ -16,3 +16,7 @@ func getBps(ctx context.Context) (<-chan storage.BpsItem, <-chan error) {
 	errC <- monitor.ErrNotImplemented
 	return nil, errC
 }
+
+func checkCall(ctx context.Context) error {
+	return monitor.ErrNotImplemented
+}

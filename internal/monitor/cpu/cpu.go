@@ -58,3 +58,7 @@ func (c *StatCollector) GetStats(ctx context.Context, period int64) (interface{}
 	totalLen := len(lastCPUTimes)
 	return NewCPUTimeStat(sumUser/float64(totalLen), sumSystem/float64(totalLen), sumIdle/float64(totalLen)), nil
 }
+
+func (s *StatCollector) CheckCall(ctx context.Context) error {
+	return checkCall(ctx)
+}

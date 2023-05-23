@@ -12,3 +12,7 @@ import (
 func collectDiskIo(ctx context.Context) ([]interface{}, error) {
 	return nil, monitor.ErrNotImplemented
 }
+
+func checkCall(ctx context.Context) error {
+	return monitor.ErrNotImplemented
+}

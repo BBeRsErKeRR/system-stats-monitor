@@ -75,3 +75,7 @@ func (c *StatCollector) GetStats(ctx context.Context, period int64) (interface{}
 		Items: ioStats,
 	}, nil
 }
+
+func (s *StatCollector) CheckCall(ctx context.Context) error {
+	return checkCall(ctx)
+}
