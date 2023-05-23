@@ -12,7 +12,7 @@ type Collector interface {
 	CheckExecution(context.Context) error
 }
 
-type ConstantCollector interface {
-	GrabStream(context.Context) (<-chan interface{}, <-chan error)
+type StreamCollector interface {
+	GrabSub(context.Context) (<-chan interface{}, <-chan error)
 	CheckExecution(context.Context) error
 }

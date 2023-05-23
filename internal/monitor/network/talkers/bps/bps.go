@@ -16,7 +16,7 @@ func New(logger logger.Logger) *StatCollector {
 	}
 }
 
-func (c *StatCollector) GrabStream(ctx context.Context) (<-chan interface{}, <-chan error) {
+func (c *StatCollector) GrabSub(ctx context.Context) (<-chan interface{}, <-chan error) {
 	return getBps(ctx)
 }
 

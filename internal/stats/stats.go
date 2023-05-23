@@ -49,7 +49,7 @@ type UseCase struct {
 	logger                 logger.Logger
 	st                     storage.Storage
 	collectors             map[string]monitor.Collector
-	constantCollectors     map[string]monitor.ConstantCollector
+	constantCollectors     map[string]monitor.StreamCollector
 	isCPUEnable            bool
 	isLoadEnable           bool
 	isNetworkEnable        bool
@@ -104,7 +104,7 @@ func CheckExecution(ctx context.Context, cfg *Config, logger logger.Logger) erro
 
 func New(ctx context.Context, cfg *Config, st storage.Storage, logger logger.Logger) (UseCase, error) {
 	collectors := map[string]monitor.Collector{}
-	constantCollectors := map[string]monitor.ConstantCollector{}
+	constantCollectors := map[string]monitor.StreamCollector{}
 
 	if cfg.IsCPUEnable {
 		cpuC := cpu.New(logger)
@@ -242,9 +242,9 @@ func (s *UseCase) collectConstant(ctx context.Context) {
 	wg.Add(len(s.constantCollectors))
 	for n, c := range s.constantCollectors {
 		name := n
-		go func(collector monitor.ConstantCollector) {
+		go func(collector monitor.StreamCollector) {
 			defer wg.Done()
-			stats, errC := collector.GrabStream(ctx)
+			stats, errC := collector.GrabSub(ctx)
 			for {
 				select {
 				case stat, ok := <-stats:
