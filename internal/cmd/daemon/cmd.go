@@ -10,6 +10,7 @@ import (
 	daemonconfig "github.com/BBeRsErKeRR/system-stats-monitor/internal/config/daemon"
 	"github.com/BBeRsErKeRR/system-stats-monitor/internal/logger"
 	internalgrpc "github.com/BBeRsErKeRR/system-stats-monitor/internal/server/grpc"
+	"github.com/BBeRsErKeRR/system-stats-monitor/internal/stats"
 	"github.com/spf13/cobra"
 )
 
@@ -23,13 +24,19 @@ var RootCmd = &cobra.Command{
 
 		config, err := daemonconfig.NewConfig(CfgFile)
 		if err != nil {
-			log.Println("Error create config: " + err.Error())
+			log.Println("error create config: " + err.Error())
 			return
 		}
 
 		logg, err := logger.New(config.Logger)
 		if err != nil {
-			log.Println("Error create app logger: " + err.Error())
+			log.Println("error create app logger: " + err.Error())
+			return
+		}
+
+		err = stats.CheckExecution(ctx, config.StatsConfig, logg)
+		if err != nil {
+			log.Println("checking collectors error: " + err.Error())
 			return
 		}
 

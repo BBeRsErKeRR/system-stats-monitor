@@ -57,6 +57,51 @@ type UseCase struct {
 	isNetworkTalkersEnable bool
 }
 
+func CheckExecution(ctx context.Context, cfg *Config, logger logger.Logger) error {
+	if cfg.IsCPUEnable {
+		if err := cpu.New(logger).CheckExecution(ctx); err != nil {
+			return err
+		}
+	}
+
+	if cfg.IsLoadEnable {
+		if err := load.New(logger).CheckExecution(ctx); err != nil {
+			return err
+		}
+	}
+
+	if cfg.IsNetworkEnable {
+		if err := networkstates.New(logger).CheckExecution(ctx); err != nil {
+			return err
+		}
+
+		if err := networkstatistics.New(logger).CheckExecution(ctx); err != nil {
+			return err
+		}
+	}
+
+	if cfg.IsDiskEnable {
+		if err := diskusage.New(logger).CheckExecution(ctx); err != nil {
+			return err
+		}
+
+		if err := diskio.New(logger).CheckExecution(ctx); err != nil {
+			return err
+		}
+	}
+
+	if cfg.IsNetworkTalkersEnable {
+		if err := protocoltalkers.New(logger).CheckExecution(ctx); err != nil {
+			return err
+		}
+		if err := bpstalkers.New(logger).CheckExecution(ctx); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 func New(ctx context.Context, cfg *Config, st storage.Storage, logger logger.Logger) (UseCase, error) {
 	collectors := map[string]monitor.Collector{}
 	constantCollectors := map[string]monitor.ConstantCollector{}

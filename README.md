@@ -74,6 +74,8 @@ To run client use command:
 
 - for linux:
   - installed packages:
+    - ss
+    - netstat
     - iostat
     - tcpdump
 - sudo NOPASSWD for execute commands:
