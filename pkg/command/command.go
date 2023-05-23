@@ -32,7 +32,11 @@ func Stream(ctx context.Context, name string, arg ...string) (chan string, chan 
 	scannerErrors := make(chan error)
 	scannerRes := make(chan string)
 	var bufErr bytes.Buffer
-	stdout, _ := cmd.StdoutPipe()
+	stdout, err := cmd.StdoutPipe()
+	if err != nil {
+		scannerErrors <- err
+		return scannerRes, scannerErrors
+	}
 	cmd.Stderr = &bufErr
 	wg := sync.WaitGroup{}
 	wg.Add(2)
