@@ -31,4 +31,4 @@ jobs:
         with:
           version: v1.52.2
           working-directory: ${{ env.BRANCH }}
-          args: --timeout 3m0s --verbose #--skip-dirs='/opt/hostedtoolcache/go|/go/pkg/mod'
+          args: --timeout 10m --verbose --path-prefix=system-stats-monitor #--skip-dirs='/opt/hostedtoolcache/go|/go/pkg/mod'
