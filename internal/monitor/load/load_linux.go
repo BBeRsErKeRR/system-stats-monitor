@@ -44,7 +44,7 @@ func getLoad() (*storage.LoadStat, error) {
 	return parseStatLine(lines)
 }
 
-func checkCall(ctx context.Context) error {
+func checkCall(ctx context.Context) error { //nolint:revive
 	_, err := files.ReadLinesOffsetN("/proc/loadavg", 0, 1)
 	return err
 }

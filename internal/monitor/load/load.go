@@ -16,7 +16,7 @@ func New(logger logger.Logger) *StatCollector {
 	}
 }
 
-func (c *StatCollector) Grab(ctx context.Context) (interface{}, error) {
+func (c *StatCollector) Grab(ctx context.Context) (interface{}, error) { //nolint:revive
 	c.logger.Info("start collect data")
 	la, err := getLoad()
 	if err != nil {

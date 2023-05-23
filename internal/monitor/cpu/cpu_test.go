@@ -18,7 +18,7 @@ func skipIfNotImplementedErr(t *testing.T, err error) {
 	}
 }
 
-func CommandRunner(ctx context.Context) (*storage.CPUTimeStat, error) {
+func CommandRunner(ctx context.Context) (*storage.CPUTimeStat, error) { //nolint:revive
 	return &storage.CPUTimeStat{User: 10.0, System: 20.0, Idle: 30.0}, nil
 }
 

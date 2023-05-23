@@ -27,11 +27,11 @@ func (ms *Storage) Clear(ctx context.Context, date time.Time) error {
 	return args.Error(0)
 }
 
-func (ms *Storage) Connect(ctx context.Context) error {
+func (ms *Storage) Connect(ctx context.Context) error { //nolint:revive
 	return nil
 }
 
-func (ms *Storage) Close(ctx context.Context) error {
+func (ms *Storage) Close(ctx context.Context) error { //nolint:revive
 	return nil
 }
 

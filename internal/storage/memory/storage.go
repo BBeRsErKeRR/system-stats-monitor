@@ -14,7 +14,7 @@ type MemStore struct {
 	sync.RWMutex
 }
 
-func (ms *MemStore) GetStats(ctx context.Context, period int64) ([]storage.Metric, error) {
+func (ms *MemStore) GetStats(ctx context.Context, period int64) ([]storage.Metric, error) { //nolint:revive
 	end := time.Now()
 	start := time.Now().Add(-time.Duration(period) * time.Second)
 	ms.RLock()
@@ -28,7 +28,7 @@ func (ms *MemStore) GetStats(ctx context.Context, period int64) ([]storage.Metri
 	return res, nil
 }
 
-func (ms *MemStore) StoreStats(ctx context.Context, data interface{}) error {
+func (ms *MemStore) StoreStats(ctx context.Context, data interface{}) error { //nolint:revive
 	ms.Lock()
 	defer ms.Unlock()
 	id := uuid.New().String()
@@ -47,7 +47,7 @@ func bulkStore[T any](ms *MemStore, data []T) error {
 	return nil
 }
 
-func (ms *MemStore) Clear(ctx context.Context, date time.Time) error {
+func (ms *MemStore) Clear(ctx context.Context, date time.Time) error { //nolint:revive
 	ms.Lock()
 	defer ms.Unlock()
 	for id, m := range ms.st {
@@ -137,11 +137,11 @@ func (st *Storage) Clear(ctx context.Context, date time.Time) error {
 	}
 }
 
-func (st *Storage) Connect(ctx context.Context) error {
+func (st *Storage) Connect(ctx context.Context) error { //nolint:revive
 	return nil
 }
 
-func (st *Storage) Close(ctx context.Context) error {
+func (st *Storage) Close(ctx context.Context) error { //nolint:revive
 	return nil
 }
 
@@ -169,7 +169,7 @@ func (st *Storage) GetNetworkStatesStats(ctx context.Context, period int64) ([]s
 	return st.nsSt.GetStats(ctx, period)
 }
 
-func (st *Storage) StoreNetworkStats(ctx context.Context, data []storage.NetworkStatsItem) error {
+func (st *Storage) StoreNetworkStats(ctx context.Context, data []storage.NetworkStatsItem) error { //nolint:revive
 	return bulkStore(&st.nStatsSt, data)
 }
 
@@ -177,7 +177,7 @@ func (st *Storage) GetNetworkStats(ctx context.Context, period int64) ([]storage
 	return st.nStatsSt.GetStats(ctx, period)
 }
 
-func (st *Storage) StoreUsageStats(ctx context.Context, data []storage.UsageStatItem) error {
+func (st *Storage) StoreUsageStats(ctx context.Context, data []storage.UsageStatItem) error { //nolint:revive
 	return bulkStore(&st.duSt, data)
 }
 
@@ -185,7 +185,7 @@ func (st *Storage) GetUsageStats(ctx context.Context, period int64) ([]storage.M
 	return st.duSt.GetStats(ctx, period)
 }
 
-func (st *Storage) StorDiskIoStats(ctx context.Context, data []storage.DiskIoStatItem) error {
+func (st *Storage) StorDiskIoStats(ctx context.Context, data []storage.DiskIoStatItem) error { //nolint:revive
 	return bulkStore(&st.dioSt, data)
 }
 
