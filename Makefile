@@ -1,4 +1,4 @@
-### Calendar app automation recieps
+### SSM (system-stats-monitor) app automation recieps
 # ¯¯¯¯¯¯¯¯
 
 .DEFAULT_GOAL := help
