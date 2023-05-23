@@ -56,7 +56,7 @@ func (s *Server) Start(ctx context.Context) error {
 	return nil
 }
 
-func (s *Server) Stop() error {
+func (s *Server) GracefulStop() error {
 	s.server.GracefulStop()
 	return nil
 }

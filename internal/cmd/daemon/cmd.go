@@ -43,7 +43,7 @@ var RootCmd = &cobra.Command{
 			}
 		}()
 
-		defer gServer.Stop()
+		defer gServer.GracefulStop()
 
 		<-ctx.Done()
 	},
