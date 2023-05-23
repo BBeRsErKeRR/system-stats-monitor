@@ -10,10 +10,10 @@ import (
 	"github.com/BBeRsErKeRR/system-stats-monitor/internal/storage"
 )
 
-func getNS(ctx context.Context) (*storage.NetworkStatesStat, error) {
+func getNS(ctx context.Context) (*storage.NetworkStatesStat, error) { //nolint:revive
 	return nil, monitor.ErrNotImplemented
 }
 
-func checkCall(ctx context.Context) error {
+func checkCall(ctx context.Context) error { //nolint:revive
 	return monitor.ErrNotImplemented
 }

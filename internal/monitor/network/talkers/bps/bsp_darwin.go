@@ -9,7 +9,7 @@ import (
 	"github.com/BBeRsErKeRR/system-stats-monitor/internal/monitor"
 )
 
-func getBps(ctx context.Context) (<-chan interface{}, <-chan error) {
+func getBps(ctx context.Context) (<-chan interface{}, <-chan error) { //nolint:revive
 	res := make(chan interface{})
 	errC := make(chan error)
 	defer close(errC)
@@ -17,6 +17,6 @@ func getBps(ctx context.Context) (<-chan interface{}, <-chan error) {
 	return res, errC
 }
 
-func checkCall(ctx context.Context) error {
+func checkCall(ctx context.Context) error { //nolint:revive
 	return monitor.ErrNotImplemented
 }
