@@ -1,0 +1,18 @@
+[logger]
+level = "DEBUG"
+out_paths = ["stdout"]
+err_paths = ["stderr"]
+
+[app]
+scan_duration = "2s"
+
+[grpc_server]
+host = "0.0.0.0"
+port = "9080"
+
+[stats]
+cpu_enable = true
+load_enable = true
+network_enable = true
+disk_enable = true
+network_talkers_enable = true

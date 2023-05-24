@@ -1,0 +1,42 @@
+name: test
+
+on:
+  push:
+
+jobs:  
+  build-and-test:
+    name: test
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        include:
+          - os: ubuntu-latest
+            packages: sysstat
+    runs-on: ${{ matrix.os }}
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up Go
+      uses: actions/setup-go@v3
+      with:
+        go-version: ^1.20
+    
+    - if: ${{ matrix.packages }}
+      run: sudo apt install -y ${{ matrix.packages }}
+   
+    - name: make build
+      run: make build
+    
+    - name: make test
+      run: make test
+  coverage:
+    needs: build-and-test
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    steps:
+    - name: Coveralls Finished
+      uses: coverallsapp/github-action@v2
+      with:
+        github-token: ${{ secrets.COVERALLS_REPO_TOKEN }}
+        parallel-finished: true

@@ -1,0 +1,85 @@
+syntax = "proto3";
+
+package v1grpc;
+
+option go_package = "./;v1grpc";
+
+
+message StartMonitoringRequest {
+  int64 response_duration = 1;
+  int64 wait_duration = 2;
+}
+
+message StatsResponse {
+  CPUTimeStatValue cpu_info = 1;
+  LoadStatValue load_info = 2;
+  NetworkStateStatValue network_state_info = 3;
+  repeated NetworkStatItem network_statistics_info = 4;
+  repeated DiskUsageItem disk_usage_info = 5;
+  repeated DiskIoItem disk_io_info = 6;
+  repeated ProtocolTalkerItem protocol_talkers = 7;
+  repeated BpsTalkerItem bps_talkers = 8;
+}
+
+message CPUTimeStatValue {
+  double user = 1;
+  double system = 2;
+  double idle = 3;
+}
+
+message LoadStatValue {
+  double load1 = 1;
+  double load5 = 2;
+  double load15 = 3;
+}
+
+message NetworkStateStatValue {
+  map<string, int32> counters =1;
+}
+
+message NetworkStatItem {
+  string command = 1;
+  int32 pid = 2;
+  int32 user = 3;
+  string protocol = 4;
+  int32 port = 5;
+}
+
+message DiskUsageItem {
+  string path = 1;
+  string fstype = 2;
+  int64 used = 3;
+  double available_percent = 4;
+  int64 inode_used = 5;
+  double inodes_available_percent = 6;
+}
+
+
+message DiskIoItem {
+  string device = 1;
+  double tps = 2;
+  double kb_read_s = 3;
+  double kb_write_s = 4;
+}
+
+
+message ProtocolTalkerItem {
+  string protocol = 1;
+  double send_bytes = 2;
+  double bytes_percentage = 3;
+}
+
+
+message BpsTalkerItem {
+  string source = 1;
+  string destination = 2;
+  string protocol = 3;
+  double bps = 4;
+  double numbers = 5;
+}
+
+
+
+service SystemStatsMonitorServiceV1 {
+  rpc StartMonitoring(StartMonitoringRequest) returns (stream StatsResponse);
+}

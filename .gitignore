@@ -19,3 +19,19 @@
 
 # Go workspace file
 go.work
+
+### User defined
+.idea/
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+.vscode/
+*.bak
+bin/
+
+cmd/cmd/
+coverage.out
